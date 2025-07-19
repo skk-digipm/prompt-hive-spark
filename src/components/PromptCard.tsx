@@ -1,0 +1,173 @@
+import { useState } from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Copy, Edit, Trash2, Star, BarChart3, Clock, Eye } from 'lucide-react';
+import { Prompt } from '@/types/prompt';
+import { useToast } from '@/hooks/use-toast';
+
+interface PromptCardProps {
+  prompt: Prompt;
+  onEdit: (prompt: Prompt) => void;
+  onDelete: (id: string) => void;
+  onUse: (id: string) => void;
+}
+
+export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps) => {
+  const [showFullContent, setShowFullContent] = useState(false);
+  const { toast } = useToast();
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to clipboard",
+        description: "Prompt content has been copied to your clipboard.",
+      });
+      onUse(prompt.id);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }).format(date);
+  };
+
+  const truncateContent = (content: string, limit: number = 150) => {
+    if (content.length <= limit) return content;
+    return content.slice(0, limit) + '...';
+  };
+
+  const renderStars = (rating?: number) => {
+    if (!rating) return null;
+    return (
+      <div className="flex items-center gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-3 h-3 ${
+              star <= rating ? 'fill-primary text-primary' : 'text-muted-foreground'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Card className="bg-gradient-card border-border/50 shadow-card hover:shadow-elevated transition-all duration-300 group">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-lg text-card-foreground truncate group-hover:text-primary transition-colors">
+              {prompt.title}
+            </h3>
+            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {formatDate(prompt.createdAt)}
+              </div>
+              <div className="flex items-center gap-1">
+                <BarChart3 className="w-3 h-3" />
+                {prompt.usageCount} uses
+              </div>
+              {renderStars(prompt.rating)}
+            </div>
+          </div>
+          
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(prompt)}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(prompt.id)}
+              className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {prompt.category && (
+          <Badge variant="secondary" className="w-fit">
+            {prompt.category}
+          </Badge>
+        )}
+      </CardHeader>
+
+      <CardContent className="py-0">
+        <div className="space-y-3">
+          <div className="text-sm text-card-foreground leading-relaxed">
+            {truncateContent(prompt.content)}
+            {prompt.content.length > 150 && (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="link" size="sm" className="p-0 h-auto ml-1 text-primary">
+                    <Eye className="w-3 h-3 mr-1" />
+                    View full
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh]">
+                  <DialogHeader>
+                    <DialogTitle>{prompt.title}</DialogTitle>
+                  </DialogHeader>
+                  <div className="mt-4">
+                    <Textarea
+                      value={prompt.content}
+                      readOnly
+                      className="min-h-[300px] resize-none"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+          </div>
+
+          {prompt.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {prompt.tags.slice(0, 3).map((tag) => (
+                <Badge key={tag} variant="outline" className="text-xs">
+                  {tag}
+                </Badge>
+              ))}
+              {prompt.tags.length > 3 && (
+                <Badge variant="outline" className="text-xs text-muted-foreground">
+                  +{prompt.tags.length - 3} more
+                </Badge>
+              )}
+            </div>
+          )}
+        </div>
+      </CardContent>
+
+      <CardFooter className="pt-4">
+        <Button
+          onClick={() => copyToClipboard(prompt.content)}
+          className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
+          size="sm"
+        >
+          <Copy className="w-4 h-4 mr-2" />
+          Copy & Use
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
