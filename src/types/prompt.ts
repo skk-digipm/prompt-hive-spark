@@ -4,6 +4,7 @@ export interface Prompt {
   content: string;
   tags: string[];
   category?: string;
+  tone?: string;
   createdAt: Date;
   updatedAt: Date;
   usageCount: number;

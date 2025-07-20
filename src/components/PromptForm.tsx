@@ -22,6 +22,7 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
   const [title, setTitle] = useState(editPrompt?.title || '');
   const [content, setContent] = useState(editPrompt?.content || '');
   const [category, setCategory] = useState(editPrompt?.category || '');
+  const [tone, setTone] = useState(editPrompt?.tone || '');
   const [tags, setTags] = useState<string[]>(editPrompt?.tags || []);
   const [newTag, setNewTag] = useState('');
   const [sourceUrl, setSourceUrl] = useState(editPrompt?.sourceUrl || '');
@@ -47,6 +48,7 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
         title: title.trim(),
         content: content.trim(),
         category: category.trim() || undefined,
+        tone: tone.trim() || undefined,
         tags,
         sourceUrl: sourceUrl.trim() || undefined,
         aiModel: aiModel.trim() || undefined,
@@ -74,6 +76,7 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
     setTitle('');
     setContent('');
     setCategory('');
+    setTone('');
     setTags([]);
     setNewTag('');
     setSourceUrl('');
@@ -158,7 +161,7 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select value={category} onValueChange={setCategory}>
@@ -176,6 +179,25 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
                   <SelectItem value="Business">Business</SelectItem>
                   <SelectItem value="Creative">Creative</SelectItem>
                   <SelectItem value="Analysis">Analysis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tone">Tone</Label>
+              <Select value={tone} onValueChange={setTone}>
+                <SelectTrigger className="border-border/50">
+                  <SelectValue placeholder="Select tone..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Professional">Professional</SelectItem>
+                  <SelectItem value="Casual">Casual</SelectItem>
+                  <SelectItem value="Friendly">Friendly</SelectItem>
+                  <SelectItem value="Formal">Formal</SelectItem>
+                  <SelectItem value="Creative">Creative</SelectItem>
+                  <SelectItem value="Analytical">Analytical</SelectItem>
+                  <SelectItem value="Persuasive">Persuasive</SelectItem>
+                  <SelectItem value="Informative">Informative</SelectItem>
                 </SelectContent>
               </Select>
             </div>
