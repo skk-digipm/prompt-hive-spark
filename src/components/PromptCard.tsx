@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Copy, Edit, Trash2, Star, BarChart3, Clock, Eye } from 'lucide-react';
+import { Copy, Edit, Trash2, Star, BarChart3, Clock, Eye, Wand2 } from 'lucide-react';
 import { Prompt } from '@/types/prompt';
 import { useToast } from '@/hooks/use-toast';
+import { PromptRewriter } from './PromptRewriter';
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -17,6 +18,7 @@ interface PromptCardProps {
 
 export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps) => {
   const [showFullContent, setShowFullContent] = useState(false);
+  const [showRewriter, setShowRewriter] = useState(false);
   const { toast } = useToast();
 
   const copyToClipboard = async (text: string) => {
@@ -113,11 +115,18 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps)
           </div>
         </div>
 
-        {prompt.category && (
-          <Badge variant="secondary" className="w-fit">
-            {prompt.category}
-          </Badge>
-        )}
+        <div className="flex gap-2 flex-wrap">
+          {prompt.category && (
+            <Badge variant="secondary" className="w-fit">
+              {prompt.category}
+            </Badge>
+          )}
+          {prompt.tone && (
+            <Badge variant="outline" className="w-fit">
+              {prompt.tone}
+            </Badge>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="py-0">
@@ -166,15 +175,35 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps)
       </CardContent>
 
       <CardFooter className="pt-4">
-        <Button
-          onClick={() => copyToClipboard(prompt.content)}
-          className="w-full bg-gradient-primary hover:opacity-90 transition-opacity"
-          size="sm"
-        >
-          <Copy className="w-4 h-4 mr-2" />
-          Copy & Use
-        </Button>
+        <div className="flex gap-2 w-full">
+          <Button
+            onClick={() => copyToClipboard(prompt.content)}
+            className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+            size="sm"
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            Copy & Use
+          </Button>
+          <Button
+            onClick={() => setShowRewriter(true)}
+            variant="outline"
+            size="sm"
+            className="px-3"
+          >
+            <Wand2 className="w-4 h-4" />
+          </Button>
+        </div>
       </CardFooter>
+
+      <PromptRewriter
+        isOpen={showRewriter}
+        onClose={() => setShowRewriter(false)}
+        prompt={prompt}
+        onUsePrompt={(content) => {
+          copyToClipboard(content);
+          setShowRewriter(false);
+        }}
+      />
     </Card>
   );
 };
