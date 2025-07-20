@@ -11,6 +11,12 @@ export interface Prompt {
   sourceUrl?: string;
   aiModel?: string;
   rating?: number; // 1-5 stars
+  metadata?: {
+    sourceUrl?: string;
+    sourceDomain?: string;
+    capturedAt?: Date;
+    selectionContext?: string;
+  };
 }
 
 export interface PromptFilter {

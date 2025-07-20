@@ -6,6 +6,7 @@ import { PromptCard } from '@/components/PromptCard';
 import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
 import { StatsCard } from '@/components/StatsCard';
+import { TextSelectionHandler } from '@/components/TextSelectionHandler';
 import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
 import { useToast } from '@/hooks/use-toast';
@@ -107,6 +108,14 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => {/* Dashboard functionality */}}
+                className="hidden sm:flex"
+              >
+                Dashboard
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleExportCSV}
                 className="hidden sm:flex"
               >
@@ -204,6 +213,9 @@ const Index = () => {
         editPrompt={editingPrompt}
         categories={allCategories}
       />
+
+      {/* Text Selection Handler for Context Menu */}
+      <TextSelectionHandler />
     </div>
   );
 };
