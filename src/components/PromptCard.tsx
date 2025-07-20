@@ -84,6 +84,13 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps)
               </div>
               {renderStars(prompt.rating)}
             </div>
+            {prompt.metadata?.sourceUrl && (
+              <div className="mt-1">
+                <p className="text-xs text-muted-foreground">
+                  Source: {prompt.metadata.sourceDomain || new URL(prompt.metadata.sourceUrl).hostname}
+                </p>
+              </div>
+            )}
           </div>
           
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

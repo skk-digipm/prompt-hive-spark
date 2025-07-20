@@ -5,8 +5,8 @@ import { usePrompts } from '@/hooks/usePrompts';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
-import { StatsCard } from '@/components/StatsCard';
 import { TextSelectionHandler } from '@/components/TextSelectionHandler';
+import { Link } from 'react-router-dom';
 import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
 import { useToast } from '@/hooks/use-toast';
@@ -75,16 +75,6 @@ const Index = () => {
     setEditingPrompt(null);
   };
 
-  // Calculate stats
-  const stats = {
-    totalPrompts: allPrompts.length,
-    totalUsage: allPrompts.reduce((sum, p) => sum + p.usageCount, 0),
-    mostUsedTags: allTags.slice(0, 5),
-    recentActivity: allPrompts.filter(p => {
-      const daysDiff = (new Date().getTime() - p.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-      return daysDiff <= 7;
-    }).length
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -108,10 +98,10 @@ const Index = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {/* Dashboard functionality */}}
+                asChild
                 className="hidden sm:flex"
               >
-                Dashboard
+                <Link to="/dashboard">Dashboard</Link>
               </Button>
               <Button
                 variant="outline"
@@ -146,9 +136,6 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <StatsCard {...stats} />
-
         {/* Search and Filters */}
         <div className="mb-8">
           <SearchBar
