@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Download, Sparkles } from 'lucide-react';
+import { Plus, Download, Sparkles, Home, Filter, User, UserPlus, Users } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { usePrompts } from '@/hooks/usePrompts';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
+import { FilterDropdown } from '@/components/FilterDropdown';
 import { TextSelectionHandler } from '@/components/TextSelectionHandler';
 import { Link } from 'react-router-dom';
 import { exportToCSV, exportToJSON } from '@/utils/export';
@@ -95,6 +97,19 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Home Icon */}
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="p-2"
+              >
+                <Link to="/">
+                  <Home className="w-4 h-4" />
+                </Link>
+              </Button>
+              
+              {/* Dashboard */}
               <Button
                 variant="outline"
                 size="sm"
@@ -103,24 +118,68 @@ const Index = () => {
               >
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
+              
+              {/* Filter Icon */}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleExportCSV}
-                className="hidden sm:flex"
+                className="p-2 sm:hidden"
+                onClick={() => {/* Will be handled by mobile filter */}}
               >
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
+                <Filter className="w-4 h-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportJSON}
-                className="hidden sm:flex"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export JSON
-              </Button>
+              
+              {/* Export Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="p-2 hidden sm:flex"
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleExportCSV}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExportJSON}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export JSON
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              {/* User Menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="p-2"
+                  >
+                    <User className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem>
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <User className="w-4 h-4 mr-2" />
+                    Login
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    <Users className="w-4 h-4 mr-2" />
+                    Continue as Guest
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <Button
                 onClick={() => setIsFormOpen(true)}
                 className="bg-gradient-primary hover:opacity-90"
@@ -137,13 +196,21 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
-        <div className="mb-8">
+        <div className="mb-8 space-y-4">
           <SearchBar
             filter={filter}
             onFilterChange={setFilter}
             allTags={allTags}
             allCategories={allCategories}
           />
+          <div className="flex justify-end">
+            <FilterDropdown
+              filter={filter}
+              onFilterChange={setFilter}
+              allTags={allTags}
+              allCategories={allCategories}
+            />
+          </div>
         </div>
 
         {/* Prompts Grid */}

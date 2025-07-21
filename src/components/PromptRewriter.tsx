@@ -88,38 +88,25 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          {/* Original vs Rewritten Toggle */}
-          <div className="flex gap-2 p-1 bg-muted rounded-lg">
-            <button
-              onClick={() => setSelectedPrompt('original')}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                selectedPrompt === 'original'
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+          {/* Enhanced Button */}
+          <div className="flex justify-center">
+            <Button
+              onClick={generateRewrite}
+              disabled={isGenerating}
+              className="bg-gradient-primary hover:opacity-90"
+              size="lg"
             >
-              Original Prompt
-            </button>
-            <button
-              onClick={() => setSelectedPrompt('rewritten')}
-              disabled={!rewrittenPrompt}
-              className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                selectedPrompt === 'rewritten' && rewrittenPrompt
-                  ? 'bg-background text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground disabled:opacity-50'
-              }`}
-            >
-              Enhanced Prompt
-              {rewrittenPrompt && <Badge variant="secondary" className="ml-2 text-xs">New</Badge>}
-            </button>
+              <Wand2 className="w-4 h-4 mr-2" />
+              {isGenerating ? 'Enhancing...' : 'Enhance with AI'}
+            </Button>
           </div>
 
-          {/* Side by side comparison */}
+          {/* Side by side comparison - Always visible */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Original Prompt */}
-            <div className="space-y-3">
+            <div className="space-y-3 border rounded-lg p-4 bg-card">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-card-foreground">Original Prompt</h3>
+                <h3 className="font-semibold text-card-foreground text-lg">Original Prompt</h3>
                 <div className="flex items-center gap-2">
                   {prompt.tone && (
                     <Badge variant="outline" className="text-xs">
@@ -137,17 +124,8 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
                 <Textarea
                   value={prompt.content}
                   readOnly
-                  className={`min-h-[300px] resize-none ${
-                    selectedPrompt === 'original' ? 'ring-2 ring-primary' : ''
-                  }`}
+                  className="min-h-[300px] resize-none bg-background"
                 />
-                {selectedPrompt === 'original' && (
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="default" className="text-xs">
-                      Selected
-                    </Badge>
-                  </div>
-                )}
               </div>
               <Button
                 onClick={() => copyToClipboard(prompt.content)}
@@ -155,44 +133,31 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
                 className="w-full"
               >
                 <Copy className="w-4 h-4 mr-2" />
-                Use Original
+                Use Original Prompt
               </Button>
             </div>
 
-            {/* Rewritten Prompt */}
-            <div className="space-y-3">
+            {/* Enhanced Prompt */}
+            <div className="space-y-3 border rounded-lg p-4 bg-card">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-card-foreground">Enhanced Prompt</h3>
-                <Button
-                  onClick={generateRewrite}
-                  disabled={isGenerating}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Wand2 className="w-4 h-4 mr-2" />
-                  {isGenerating ? 'Enhancing...' : 'Enhance'}
-                </Button>
+                <h3 className="font-semibold text-card-foreground text-lg">Enhanced Prompt</h3>
+                {rewrittenPrompt && (
+                  <Badge variant="default" className="bg-gradient-primary text-primary-foreground">
+                    AI Enhanced
+                  </Badge>
+                )}
               </div>
               <div className="relative">
                 <Textarea
-                  value={rewrittenPrompt || 'Click "Enhance" to generate an improved version of your prompt...'}
+                  value={rewrittenPrompt || 'Click "Enhance with AI" above to generate an improved version of your prompt...'}
                   readOnly
-                  className={`min-h-[300px] resize-none ${
-                    selectedPrompt === 'rewritten' && rewrittenPrompt ? 'ring-2 ring-primary' : ''
-                  } ${!rewrittenPrompt ? 'text-muted-foreground' : ''}`}
+                  className={`min-h-[300px] resize-none bg-background ${!rewrittenPrompt ? 'text-muted-foreground italic' : ''}`}
                 />
-                {selectedPrompt === 'rewritten' && rewrittenPrompt && (
-                  <div className="absolute top-2 right-2">
-                    <Badge variant="default" className="text-xs">
-                      Selected
-                    </Badge>
-                  </div>
-                )}
                 {isGenerating && (
-                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Wand2 className="w-4 h-4 animate-spin" />
-                      AI is enhancing your prompt...
+                  <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center rounded-md">
+                    <div className="flex items-center gap-3 text-sm bg-card p-4 rounded-lg shadow-lg border">
+                      <Wand2 className="w-5 h-5 animate-spin text-primary" />
+                      <span className="font-medium">AI is enhancing your prompt...</span>
                     </div>
                   </div>
                 )}
@@ -204,28 +169,19 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
                 className="w-full"
               >
                 <Copy className="w-4 h-4 mr-2" />
-                Use Enhanced
+                Use Enhanced Prompt
               </Button>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-6 border-t">
             <Button
               onClick={resetAndClose}
               variant="outline"
               className="flex-1"
             >
               Cancel
-            </Button>
-            <Button
-              onClick={() => copyToClipboard(selectedPrompt === 'original' ? prompt.content : rewrittenPrompt)}
-              disabled={selectedPrompt === 'rewritten' && !rewrittenPrompt}
-              className="flex-1 bg-gradient-primary hover:opacity-90"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Use Selected Prompt
-              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>

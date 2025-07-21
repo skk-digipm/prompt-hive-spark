@@ -24,6 +24,7 @@ export interface PromptFilter {
   search?: string;
   tags?: string[];
   category?: string;
+  sortBy?: 'newest' | 'oldest' | 'usage' | 'alphabetical';
   dateRange?: {
     start: Date;
     end: Date;
