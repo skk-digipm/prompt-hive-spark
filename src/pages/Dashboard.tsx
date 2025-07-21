@@ -1,10 +1,13 @@
 import { usePrompts } from '@/hooks/usePrompts';
 import { StatsCard } from '@/components/StatsCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Users, Repeat, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Users, Repeat, Download, Home } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { allPrompts, allTags } = usePrompts();
+  const navigate = useNavigate();
 
   // Calculate all metrics
   const stats = {
@@ -24,14 +27,25 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-text bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Overview of your PromptHive analytics and usage statistics
-          </p>
+        {/* Header with Home Button */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-text bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-2">
+              Overview of your PromptHive analytics and usage statistics
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <Home className="w-4 h-4" />
+            Home
+          </Button>
         </div>
 
         {/* Main Stats Grid */}

@@ -70,8 +70,15 @@ export const usePrompts = () => {
   const savePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
     setLoading(true);
     try {
+      // Add URL tag automatically if metadata contains sourceUrl
+      const tagsWithUrl = [...(promptData.tags || [])];
+      if (promptData.metadata?.sourceUrl && !tagsWithUrl.includes('URL')) {
+        tagsWithUrl.push('URL');
+      }
+
       const newPrompt: Prompt = {
         ...promptData,
+        tags: tagsWithUrl,
         id: Date.now().toString(),
         createdAt: new Date(),
         updatedAt: new Date(),

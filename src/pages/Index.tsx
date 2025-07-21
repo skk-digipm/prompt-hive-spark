@@ -180,14 +180,13 @@ const Index = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               
-              <Button
-                onClick={() => setIsFormOpen(true)}
-                className="bg-gradient-primary hover:opacity-90"
-                size="sm"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Prompt
-              </Button>
+               <Button
+                 onClick={() => setIsFormOpen(true)}
+                 className="bg-gradient-primary hover:opacity-90"
+                 size="sm"
+               >
+                 <Plus className="w-4 h-4" />
+               </Button>
             </div>
           </div>
         </div>
