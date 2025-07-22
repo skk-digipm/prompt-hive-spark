@@ -121,6 +121,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      increment_usage_count: {
+        Args: { prompt_id: string }
+        Returns: undefined
+      }
       upsert_tags: {
         Args: { tag_names: string[] }
         Returns: undefined
