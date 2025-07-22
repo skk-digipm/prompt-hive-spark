@@ -1,47 +1,70 @@
 import { useState, useEffect } from 'react';
 import { Prompt, PromptFilter } from '@/types/prompt';
-
-// Mock data for development - will be replaced with Supabase integration
-const mockPrompts: Prompt[] = [
-  {
-    id: '1',
-    title: 'Blog Post Introduction',
-    content: 'Write an engaging introduction for a blog post about [TOPIC]. The introduction should hook the reader, provide context, and clearly state what they will learn.',
-    tags: ['blog', 'writing', 'content'],
-    category: 'Content Creation',
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-    usageCount: 12,
-    rating: 5
-  },
-  {
-    id: '2',
-    title: 'Code Review Assistant',
-    content: 'Review the following code and provide feedback on:\n1. Code quality and best practices\n2. Potential bugs or issues\n3. Performance optimizations\n4. Readability improvements\n\n[PASTE CODE HERE]',
-    tags: ['code', 'review', 'development'],
-    category: 'Development',
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-12'),
-    usageCount: 8,
-    rating: 4
-  },
-  {
-    id: '3',
-    title: 'Email Professional Response',
-    content: 'Help me write a professional email response to [SITUATION]. The tone should be [TONE: formal/friendly/assertive] and include [KEY POINTS].',
-    tags: ['email', 'professional', 'communication'],
-    category: 'Business',
-    createdAt: new Date('2024-01-08'),
-    updatedAt: new Date('2024-01-08'),
-    usageCount: 15,
-    rating: 5
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
 
 export const usePrompts = () => {
-  const [prompts, setPrompts] = useState<Prompt[]>(mockPrompts);
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<PromptFilter>({});
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const { user } = useAuth();
+
+  // Load prompts from Supabase
+  const loadPrompts = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('prompts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const formattedPrompts: Prompt[] = data.map(prompt => ({
+        id: prompt.id,
+        title: prompt.title,
+        content: prompt.content,
+        tags: prompt.tags || [],
+        category: prompt.category,
+        tone: prompt.tone,
+        createdAt: new Date(prompt.created_at),
+        updatedAt: new Date(prompt.updated_at),
+        usageCount: prompt.usage_count,
+        rating: prompt.rating,
+        sourceUrl: prompt.source_url,
+        aiModel: prompt.ai_model,
+        isLongPrompt: prompt.is_long_prompt,
+        metadata: prompt.metadata as any
+      }));
+
+      setPrompts(formattedPrompts);
+    } catch (error) {
+      console.error('Failed to load prompts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load available tags
+  const loadTags = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('tags')
+        .select('name')
+        .order('usage_count', { ascending: false });
+
+      if (error) throw error;
+      setAllTags(data.map(tag => tag.name));
+    } catch (error) {
+      console.error('Failed to load tags:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadPrompts();
+    loadTags();
+  }, []);
 
   // Filter prompts based on current filter
   const filteredPrompts = prompts.filter(prompt => {
@@ -76,14 +99,47 @@ export const usePrompts = () => {
         tagsWithUrl.push('URL');
       }
 
+      const { data, error } = await supabase
+        .from('prompts')
+        .insert({
+          user_id: user?.id || null,
+          title: promptData.title,
+          content: promptData.content,
+          tags: tagsWithUrl,
+          category: promptData.category,
+          tone: promptData.tone,
+          source_url: promptData.sourceUrl,
+          ai_model: promptData.aiModel,
+          rating: promptData.rating,
+          is_long_prompt: promptData.content.length > 2000,
+          metadata: promptData.metadata as any
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update tags in database
+      if (tagsWithUrl.length > 0) {
+        await supabase.rpc('upsert_tags', { tag_names: tagsWithUrl });
+        await loadTags(); // Refresh tags
+      }
+
       const newPrompt: Prompt = {
-        ...promptData,
-        tags: tagsWithUrl,
-        id: Date.now().toString(),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        usageCount: 0,
-        isLongPrompt: promptData.content.length > 2000
+        id: data.id,
+        title: data.title,
+        content: data.content,
+        tags: data.tags || [],
+        category: data.category,
+        tone: data.tone,
+        createdAt: new Date(data.created_at),
+        updatedAt: new Date(data.updated_at),
+        usageCount: data.usage_count,
+        rating: data.rating,
+        sourceUrl: data.source_url,
+        aiModel: data.ai_model,
+        isLongPrompt: data.is_long_prompt,
+        metadata: data.metadata as any
       };
       
       setPrompts(prev => [newPrompt, ...prev]);
@@ -99,9 +155,38 @@ export const usePrompts = () => {
   const updatePrompt = async (id: string, updates: Partial<Prompt>) => {
     setLoading(true);
     try {
+      const { data, error } = await supabase
+        .from('prompts')
+        .update({
+          title: updates.title,
+          content: updates.content,
+          tags: updates.tags,
+          category: updates.category,
+          tone: updates.tone,
+          source_url: updates.sourceUrl,
+          ai_model: updates.aiModel,
+          rating: updates.rating,
+          metadata: updates.metadata as any
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update tags in database if they changed
+      if (updates.tags && updates.tags.length > 0) {
+        await supabase.rpc('upsert_tags', { tag_names: updates.tags });
+        await loadTags(); // Refresh tags
+      }
+
       setPrompts(prev => prev.map(prompt => 
         prompt.id === id 
-          ? { ...prompt, ...updates, updatedAt: new Date() }
+          ? { 
+              ...prompt, 
+              ...updates, 
+              updatedAt: new Date(data.updated_at) 
+            }
           : prompt
       ));
     } catch (error) {
@@ -115,6 +200,13 @@ export const usePrompts = () => {
   const deletePrompt = async (id: string) => {
     setLoading(true);
     try {
+      const { error } = await supabase
+        .from('prompts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
       setPrompts(prev => prev.filter(prompt => prompt.id !== id));
     } catch (error) {
       console.error('Failed to delete prompt:', error);
@@ -125,16 +217,23 @@ export const usePrompts = () => {
   };
 
   const incrementUsage = async (id: string) => {
-    setPrompts(prev => prev.map(prompt => 
-      prompt.id === id 
-        ? { ...prompt, usageCount: prompt.usageCount + 1, updatedAt: new Date() }
-        : prompt
-    ));
+    try {
+      const { error } = await supabase
+        .from('prompts')
+        .rpc('increment_usage_count', { prompt_id: id });
+
+      if (error) throw error;
+
+      setPrompts(prev => prev.map(prompt => 
+        prompt.id === id 
+          ? { ...prompt, usageCount: prompt.usageCount + 1, updatedAt: new Date() }
+          : prompt
+      ));
+    } catch (error) {
+      console.error('Failed to increment usage:', error);
+    }
   };
 
-  // Get all unique tags
-  const allTags = [...new Set(prompts.flatMap(p => p.tags))];
-  
   // Get all unique categories
   const allCategories = [...new Set(prompts.map(p => p.category).filter(Boolean))];
 
@@ -149,6 +248,7 @@ export const usePrompts = () => {
     deletePrompt,
     incrementUsage,
     allTags,
-    allCategories
+    allCategories,
+    loadPrompts
   };
 };

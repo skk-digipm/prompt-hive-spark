@@ -14,13 +14,117 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      prompts: {
+        Row: {
+          ai_model: string | null
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          is_long_prompt: boolean | null
+          metadata: Json | null
+          rating: number | null
+          source_url: string | null
+          tags: string[] | null
+          title: string
+          tone: string | null
+          updated_at: string
+          usage_count: number
+          user_id: string | null
+        }
+        Insert: {
+          ai_model?: string | null
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_long_prompt?: boolean | null
+          metadata?: Json | null
+          rating?: number | null
+          source_url?: string | null
+          tags?: string[] | null
+          title: string
+          tone?: string | null
+          updated_at?: string
+          usage_count?: number
+          user_id?: string | null
+        }
+        Update: {
+          ai_model?: string | null
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_long_prompt?: boolean | null
+          metadata?: Json | null
+          rating?: number | null
+          source_url?: string | null
+          tags?: string[] | null
+          title?: string
+          tone?: string | null
+          updated_at?: string
+          usage_count?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          usage_count: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          usage_count?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      upsert_tags: {
+        Args: { tag_names: string[] }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
