@@ -219,7 +219,6 @@ export const usePrompts = () => {
   const incrementUsage = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('prompts')
         .rpc('increment_usage_count', { prompt_id: id });
 
       if (error) throw error;
