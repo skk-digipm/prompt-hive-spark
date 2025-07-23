@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,17 +19,33 @@ interface PromptFormProps {
 }
 
 export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: PromptFormProps) => {
-  const [title, setTitle] = useState(editPrompt?.title || '');
-  const [content, setContent] = useState(editPrompt?.content || '');
-  const [category, setCategory] = useState(editPrompt?.category || '');
-  const [tone, setTone] = useState(editPrompt?.tone || '');
-  const [tags, setTags] = useState<string[]>(editPrompt?.tags || []);
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [category, setCategory] = useState('');
+  const [tone, setTone] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
-  const [sourceUrl, setSourceUrl] = useState(editPrompt?.sourceUrl || '');
-  const [aiModel, setAiModel] = useState(editPrompt?.aiModel || '');
-  const [rating, setRating] = useState(editPrompt?.rating || undefined);
+  const [sourceUrl, setSourceUrl] = useState('');
+  const [aiModel, setAiModel] = useState('');
+  const [rating, setRating] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  // Populate form when editing a prompt
+  useEffect(() => {
+    if (editPrompt) {
+      setTitle(editPrompt.title || '');
+      setContent(editPrompt.content || '');
+      setCategory(editPrompt.category || '');
+      setTone(editPrompt.tone || '');
+      setTags(editPrompt.tags || []);
+      setSourceUrl(editPrompt.sourceUrl || '');
+      setAiModel(editPrompt.aiModel || '');
+      setRating(editPrompt.rating || undefined);
+    } else {
+      resetForm();
+    }
+  }, [editPrompt, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,33 +1,63 @@
+import { useState } from 'react';
 import { usePrompts } from '@/hooks/usePrompts';
 import { StatsCard } from '@/components/StatsCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Users, Repeat, Download, Home } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { TrendingUp, Users, Repeat, Download, Home, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const { allPrompts, allTags } = usePrompts();
   const navigate = useNavigate();
+  const [timeFilter, setTimeFilter] = useState('all-time');
 
-  // Calculate all metrics
+  // Filter prompts based on selected time period
+  const getFilteredPrompts = () => {
+    const now = new Date();
+    let cutoffDate: Date;
+
+    switch (timeFilter) {
+      case '24h':
+        cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case 'weekly':
+        cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case 'monthly':
+        cutoffDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        break;
+      case 'yearly':
+        cutoffDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        break;
+      default:
+        return allPrompts;
+    }
+
+    return allPrompts.filter(p => new Date(p.updatedAt) >= cutoffDate);
+  };
+
+  const filteredPrompts = getFilteredPrompts();
+
+  // Calculate metrics based on filtered data
   const stats = {
-    totalPrompts: allPrompts.length,
-    totalUsage: allPrompts.reduce((sum, p) => sum + p.usageCount, 0),
+    totalPrompts: filteredPrompts.length,
+    totalUsage: filteredPrompts.reduce((sum, p) => sum + p.usageCount, 0),
     mostUsedTags: allTags.slice(0, 5),
-    recentActivity: allPrompts.filter(p => {
+    recentActivity: filteredPrompts.filter(p => {
       const daysDiff = (new Date().getTime() - p.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
       return daysDiff <= 7;
     }).length,
     // Additional metrics
     numberOfInstalls: 1247, // Mock data - would come from analytics
     dailyActiveUsers: 89, // Mock data - would come from analytics
-    promptReuseRate: Math.round((allPrompts.filter(p => p.usageCount > 1).length / Math.max(allPrompts.length, 1)) * 100)
+    promptReuseRate: Math.round((filteredPrompts.filter(p => p.usageCount > 1).length / Math.max(filteredPrompts.length, 1)) * 100)
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header with Home Button */}
+        {/* Header with Time Filter and Home Button */}
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold bg-gradient-text bg-clip-text text-transparent">
@@ -37,15 +67,32 @@ const Dashboard = () => {
               Overview of your PromptHive analytics and usage statistics
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2"
-          >
-            <Home className="w-4 h-4" />
-            Home
-          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <Select value={timeFilter} onValueChange={setTimeFilter}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="24h">Last 24 Hours</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="yearly">Yearly</SelectItem>
+                  <SelectItem value="all-time">All Time</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </Button>
+          </div>
         </div>
 
         {/* Main Stats Grid */}

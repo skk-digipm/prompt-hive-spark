@@ -8,6 +8,7 @@ import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { TextSelectionHandler } from '@/components/TextSelectionHandler';
+import { AuthDialog } from '@/components/AuthDialog';
 import { Link } from 'react-router-dom';
 import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
@@ -30,6 +31,7 @@ const Index = () => {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { toast } = useToast();
 
   const handleSavePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
@@ -164,16 +166,16 @@ const Index = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)}>
                     <UserPlus className="w-4 h-4 mr-2" />
                     Sign Up
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)}>
                     <User className="w-4 h-4 mr-2" />
                     Login
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsAuthDialogOpen(true)}>
                     <Users className="w-4 h-4 mr-2" />
                     Continue as Guest
                   </DropdownMenuItem>
@@ -265,6 +267,12 @@ const Index = () => {
         onSave={handleSavePrompt}
         editPrompt={editingPrompt}
         categories={allCategories}
+      />
+
+      {/* Auth Dialog */}
+      <AuthDialog 
+        open={isAuthDialogOpen} 
+        onOpenChange={setIsAuthDialogOpen} 
       />
 
       {/* Text Selection Handler for Context Menu */}
