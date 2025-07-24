@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Chrome, Sparkles, Search, Folder, Cloud, Settings, MessageCircle, Palette, CheckCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { LoginPopup } from '@/components/LoginPopup';
 
 const Home = () => {
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const features = [
     {
       icon: <Search className="w-6 h-6" />,
@@ -63,16 +65,20 @@ const Home = () => {
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-text bg-clip-text text-transparent">
-                  PromptPal
-                </h1>
-                <p className="text-xs text-muted-foreground">Chrome Extension</p>
+              <h1 className="text-xl font-bold bg-gradient-text bg-clip-text text-transparent">
+                PromptHive
+              </h1>
+              <p className="text-xs text-muted-foreground">Chrome Extension</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/prompts">Open App</Link>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowLoginPopup(true)}
+              >
+                Open App
               </Button>
               <Button className="bg-gradient-primary hover:opacity-90" size="sm">
                 <Chrome className="w-4 h-4 mr-2" />
@@ -89,7 +95,7 @@ const Home = () => {
           <div className="flex items-center justify-center gap-2 mb-6">
             <span className="text-4xl">🧠</span>
             <h1 className="text-5xl font-bold bg-gradient-text bg-clip-text text-transparent">
-              PromptPal
+              PromptHive
             </h1>
           </div>
           <h2 className="text-2xl font-semibold text-foreground mb-4">
@@ -104,8 +110,12 @@ const Home = () => {
               <Chrome className="w-5 h-5 mr-2" />
               Add to Chrome - Free
             </Button>
-            <Button size="lg" variant="outline" asChild>
-              <Link to="/prompts">Try Web Version</Link>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={() => setShowLoginPopup(true)}
+            >
+              Try Web Version
             </Button>
           </div>
 
@@ -122,7 +132,7 @@ const Home = () => {
             Tired of digging through Notion docs, Google Sheets, or scattered notes to find your best prompts?
           </h3>
           <p className="text-lg text-muted-foreground">
-            PromptPal helps you manage all your prompts with one-click access, slash commands, tags, and folders — so you can focus on creation, not copy-paste chaos.
+            PromptHive helps you manage all your prompts with one-click access, slash commands, tags, and folders — so you can focus on creation, not copy-paste chaos.
           </p>
         </div>
       </section>
@@ -174,13 +184,13 @@ const Home = () => {
       {/* Why PromptPal */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-3xl font-bold text-foreground mb-8">🚀 Why PromptPal?</h3>
+          <h3 className="text-3xl font-bold text-foreground mb-8">🚀 Why PromptHive?</h3>
           <div className="space-y-6 text-lg">
             <p className="text-muted-foreground">
               Most prompt managers are either too simple or too cluttered.
             </p>
             <p className="text-foreground font-medium">
-              PromptPal is designed for real users — creators, devs, marketers, and AI explorers — who need speed, organization, and control.
+              PromptHive is designed for real users — creators, devs, marketers, and AI explorers — who need speed, organization, and control.
             </p>
             <p className="text-muted-foreground">
               No more switching tabs or copy-pasting from files — just press <kbd className="px-2 py-1 bg-muted rounded text-sm font-mono">/</kbd>, search, and go.
@@ -196,11 +206,11 @@ const Home = () => {
             Ready to supercharge your AI workflow?
           </h3>
           <p className="text-xl text-muted-foreground mb-8">
-            Join thousands of creators who've streamlined their prompt management with PromptPal.
+            Join thousands of creators who've streamlined their prompt management with PromptHive.
           </p>
           <Button size="lg" className="bg-gradient-primary hover:opacity-90">
             <Chrome className="w-5 h-5 mr-2" />
-            Install PromptPal Extension
+            Install PromptHive Extension
           </Button>
         </div>
       </section>
@@ -208,9 +218,15 @@ const Home = () => {
       {/* Footer */}
       <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-border/50">
         <div className="max-w-4xl mx-auto text-center text-muted-foreground">
-          <p>&copy; 2024 PromptPal. Built for AI creators, by AI creators.</p>
+          <p>&copy; 2024 PromptHive. Built for AI creators, by AI creators.</p>
         </div>
       </footer>
+
+      <LoginPopup 
+        open={showLoginPopup}
+        onOpenChange={setShowLoginPopup}
+        message="Login to view, reuse, and enhance your saved prompts"
+      />
     </div>
   );
 };
