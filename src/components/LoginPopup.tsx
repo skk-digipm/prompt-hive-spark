@@ -42,6 +42,8 @@ export const LoginPopup = ({ open, onOpenChange, message }: LoginPopupProps) => 
         description: "Welcome back!"
       });
       onOpenChange(false);
+      // Navigate to prompts page after successful login
+      window.location.href = '/prompts';
     }
     
     setLoading(false);
@@ -65,6 +67,8 @@ export const LoginPopup = ({ open, onOpenChange, message }: LoginPopupProps) => 
         description: "Welcome to PromptHive!"
       });
       onOpenChange(false);
+      // Navigate to prompts page after successful signup
+      window.location.href = '/prompts';
     }
     
     setLoading(false);

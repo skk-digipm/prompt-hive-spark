@@ -40,17 +40,20 @@ const Dashboard = () => {
   const filteredPrompts = getFilteredPrompts();
 
   // Calculate metrics based on filtered data
+  const getFilteredRecentActivity = () => {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - 7);
+    return filteredPrompts.filter(p => new Date(p.updatedAt) >= cutoffDate).length;
+  };
+
   const stats = {
     totalPrompts: filteredPrompts.length,
     totalUsage: filteredPrompts.reduce((sum, p) => sum + p.usageCount, 0),
     mostUsedTags: allTags.slice(0, 5),
-    recentActivity: filteredPrompts.filter(p => {
-      const daysDiff = (new Date().getTime() - p.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-      return daysDiff <= 7;
-    }).length,
-    // Additional metrics
-    numberOfInstalls: 1247, // Mock data - would come from analytics
-    dailyActiveUsers: 89, // Mock data - would come from analytics
+    recentActivity: getFilteredRecentActivity(),
+    // Additional metrics - these would vary based on time filter in real app
+    numberOfInstalls: timeFilter === 'all-time' ? 1247 : timeFilter === 'yearly' ? 1200 : timeFilter === 'monthly' ? 150 : timeFilter === 'weekly' ? 35 : 12,
+    dailyActiveUsers: timeFilter === 'all-time' ? 89 : timeFilter === 'yearly' ? 85 : timeFilter === 'monthly' ? 72 : timeFilter === 'weekly' ? 45 : 18,
     promptReuseRate: Math.round((filteredPrompts.filter(p => p.usageCount > 1).length / Math.max(filteredPrompts.length, 1)) * 100)
   };
 
@@ -86,11 +89,10 @@ const Dashboard = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/prompts')}
               className="flex items-center gap-2"
             >
               <Home className="w-4 h-4" />
-              Home
             </Button>
           </div>
         </div>
@@ -104,7 +106,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stats.totalPrompts}</div>
-              <p className="text-xs text-muted-foreground">All time collection</p>
+              <p className="text-xs text-muted-foreground">
+                {timeFilter === 'all-time' ? 'All time collection' : 
+                 timeFilter === 'yearly' ? 'This year' :
+                 timeFilter === 'monthly' ? 'This month' :
+                 timeFilter === 'weekly' ? 'This week' : 'Last 24 hours'}
+              </p>
             </CardContent>
           </Card>
 
@@ -115,7 +122,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stats.totalUsage}</div>
-              <p className="text-xs text-muted-foreground">Times prompts used</p>
+              <p className="text-xs text-muted-foreground">
+                {timeFilter === 'all-time' ? 'Times prompts used' : 
+                 timeFilter === 'yearly' ? 'Usage this year' :
+                 timeFilter === 'monthly' ? 'Usage this month' :
+                 timeFilter === 'weekly' ? 'Usage this week' : 'Usage last 24h'}
+              </p>
             </CardContent>
           </Card>
 
@@ -126,7 +138,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stats.dailyActiveUsers}</div>
-              <p className="text-xs text-muted-foreground">Last 24 hours</p>
+              <p className="text-xs text-muted-foreground">
+                {timeFilter === 'all-time' ? 'Total active users' : 
+                 timeFilter === 'yearly' ? 'Active this year' :
+                 timeFilter === 'monthly' ? 'Active this month' :
+                 timeFilter === 'weekly' ? 'Active this week' : 'Active last 24h'}
+              </p>
             </CardContent>
           </Card>
 
@@ -137,7 +154,12 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">{stats.numberOfInstalls}</div>
-              <p className="text-xs text-muted-foreground">Total downloads</p>
+              <p className="text-xs text-muted-foreground">
+                {timeFilter === 'all-time' ? 'Total downloads' : 
+                 timeFilter === 'yearly' ? 'Downloads this year' :
+                 timeFilter === 'monthly' ? 'Downloads this month' :
+                 timeFilter === 'weekly' ? 'Downloads this week' : 'Downloads last 24h'}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -147,7 +169,12 @@ const Dashboard = () => {
           <Card className="bg-gradient-card border-border/50 shadow-card">
             <CardHeader>
               <CardTitle className="text-lg text-foreground">Recent Activity</CardTitle>
-              <CardDescription>Last 7 days</CardDescription>
+              <CardDescription>
+                {timeFilter === 'all-time' ? 'Last 7 days' : 
+                 timeFilter === 'yearly' ? 'This year' :
+                 timeFilter === 'monthly' ? 'This month' :
+                 timeFilter === 'weekly' ? 'This week' : 'Last 24 hours'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-primary">{stats.recentActivity}</div>
@@ -158,7 +185,12 @@ const Dashboard = () => {
           <Card className="bg-gradient-card border-border/50 shadow-card">
             <CardHeader>
               <CardTitle className="text-lg text-foreground">Prompt Reuse Rate</CardTitle>
-              <CardDescription>Last 7 days</CardDescription>
+              <CardDescription>
+                {timeFilter === 'all-time' ? 'All time' : 
+                 timeFilter === 'yearly' ? 'This year' :
+                 timeFilter === 'monthly' ? 'This month' :
+                 timeFilter === 'weekly' ? 'This week' : 'Last 24 hours'}
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-primary">{stats.promptReuseRate}%</div>

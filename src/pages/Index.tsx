@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Download, FileText, User, Plus, Sparkles, Settings, LogOut } from 'lucide-react';
+import { Search, Filter, Download, FileText, User, Plus, Sparkles, Settings, LogOut, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePrompts } from '@/hooks/usePrompts';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptForm } from '@/components/PromptForm';
@@ -15,7 +16,7 @@ import { AuthDialog } from '@/components/AuthDialog';
 import { UserProfile } from '@/components/UserProfile';
 import { GuestSignupPrompt } from '@/components/GuestSignupPrompt';
 import { LoginPopup } from '@/components/LoginPopup';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
@@ -23,6 +24,7 @@ import { Prompt } from '@/types/prompt';
 const Index = () => {
   const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags, allCategories } = usePrompts();
   const { user, signOut, signInAnonymously } = useAuth();
+  const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
@@ -88,7 +90,7 @@ const Index = () => {
       <header className="bg-gradient-card border-b border-border/50 shadow-card sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <button onClick={() => window.location.href = '/prompts'} className="flex items-center gap-2">
+            <button onClick={() => navigate('/prompts')} className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
@@ -97,75 +99,101 @@ const Index = () => {
               </span>
             </button>
             
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Download className="w-4 h-4 mr-2" />
-                    Export
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-background border border-border shadow-elevated z-50">
-                  <DropdownMenuItem onClick={handleExportCSV} className="cursor-pointer">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export as CSV
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleExportJSON} className="cursor-pointer">
-                    <FileText className="w-4 h-4 mr-2" />
-                    Export as JSON
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              {user ? (
+            <TooltipProvider>
+              <div className="flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/dashboard">
+                        <BarChart3 className="w-4 h-4" />
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Dashboard</p>
+                  </TooltipContent>
+                </Tooltip>
+                
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <User className="w-4 h-4 mr-2" />
-                      {user.user_metadata?.display_name || user.email?.split('@')[0] || 'User'}
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Download className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Export</p>
+                      </TooltipContent>
+                    </Tooltip>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-elevated z-50">
-                    <DropdownMenuItem 
-                      onClick={() => setShowProfile(true)}
-                      className="cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4 mr-2" />
-                      Profile Settings
+                  <DropdownMenuContent align="end" className="bg-background border border-border shadow-elevated z-50">
+                    <DropdownMenuItem onClick={handleExportCSV} className="cursor-pointer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export as CSV
                     </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={() => signOut()}
-                      className="cursor-pointer text-destructive"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
+                    <DropdownMenuItem onClick={handleExportJSON} className="cursor-pointer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Export as JSON
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowLoginPopup(true)}
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Login / Sign Up
-                </Button>
-              )}
               
-              <Button
-                onClick={() => setShowForm(true)}
-                className="bg-gradient-primary hover:opacity-90"
-                size="sm"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Prompt
-              </Button>
-            </div>
+                {user ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <User className="w-4 h-4 mr-2" />
+                        {user.user_metadata?.display_name || user.email?.split('@')[0] || 'User'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-elevated z-50">
+                      <DropdownMenuItem 
+                        onClick={() => setShowProfile(true)}
+                        className="cursor-pointer"
+                      >
+                        <Settings className="w-4 h-4 mr-2" />
+                        Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={async () => {
+                          await signOut();
+                          navigate('/');
+                        }}
+                        className="cursor-pointer text-destructive"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sign Out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowLoginPopup(true)}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Login / Sign Up
+                  </Button>
+                )}
+              
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => setShowForm(true)}
+                      className="bg-gradient-primary hover:opacity-90"
+                      size="sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add Prompt</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+             </TooltipProvider>
           </div>
         </div>
       </header>
