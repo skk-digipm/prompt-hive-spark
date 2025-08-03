@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Wand2, Copy, Sparkles, ArrowRight } from 'lucide-react';
 import { Prompt } from '@/types/prompt';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PromptRewriterProps {
   isOpen: boolean;
@@ -23,21 +24,16 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
   const generateRewrite = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch('/functions/v1/enhance-prompt', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('enhance-prompt', {
+        body: {
           prompt: prompt.content
-        }),
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to enhance prompt');
+      if (error) {
+        throw new Error(error.message || 'Failed to enhance prompt');
       }
 
-      const data = await response.json();
       setRewrittenPrompt(data.enhancedPrompt);
       
       toast({
@@ -45,6 +41,7 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
         description: "AI has generated an improved version of your prompt.",
       });
     } catch (error) {
+      console.error('Error enhancing prompt:', error);
       toast({
         title: "Enhancement Failed",
         description: "Could not enhance the prompt. Please try again.",
