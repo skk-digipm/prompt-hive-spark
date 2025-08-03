@@ -35,6 +35,9 @@ export const usePrompts = () => {
         sourceUrl: prompt.source_url,
         aiModel: prompt.ai_model,
         isLongPrompt: prompt.is_long_prompt,
+        versionNumber: prompt.version_number || 1,
+        parentPromptId: prompt.parent_prompt_id,
+        isCurrentVersion: prompt.is_current_version !== false,
         metadata: prompt.metadata as any
       }));
 
@@ -68,6 +71,9 @@ export const usePrompts = () => {
 
   // Filter prompts based on current filter
   const filteredPrompts = prompts.filter(prompt => {
+    // Only show current versions in the main list
+    if (!prompt.isCurrentVersion) return false;
+
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
       if (!prompt.title.toLowerCase().includes(searchLower) && 
@@ -139,6 +145,9 @@ export const usePrompts = () => {
         sourceUrl: data.source_url,
         aiModel: data.ai_model,
         isLongPrompt: data.is_long_prompt,
+        versionNumber: data.version_number || 1,
+        parentPromptId: data.parent_prompt_id,
+        isCurrentVersion: data.is_current_version !== false,
         metadata: data.metadata as any
       };
       
@@ -155,6 +164,38 @@ export const usePrompts = () => {
   const updatePrompt = async (id: string, updates: Partial<Prompt>) => {
     setLoading(true);
     try {
+      // First, get the current prompt to create a version
+      const { data: currentPrompt, error: fetchError } = await supabase
+        .from('prompts')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Create a new version with the old content
+      const { error: versionError } = await supabase
+        .from('prompts')
+        .insert({
+          title: currentPrompt.title,
+          content: currentPrompt.content,
+          tags: currentPrompt.tags,
+          category: currentPrompt.category,
+          tone: currentPrompt.tone,
+          rating: currentPrompt.rating,
+          user_id: currentPrompt.user_id,
+          parent_prompt_id: id,
+          version_number: (currentPrompt.version_number || 1),
+          is_current_version: false,
+          metadata: currentPrompt.metadata,
+          source_url: currentPrompt.source_url,
+          ai_model: currentPrompt.ai_model,
+          is_long_prompt: currentPrompt.is_long_prompt
+        });
+
+      if (versionError) throw versionError;
+
+      // Update the current prompt
       const { data, error } = await supabase
         .from('prompts')
         .update({
@@ -166,7 +207,8 @@ export const usePrompts = () => {
           source_url: updates.sourceUrl,
           ai_model: updates.aiModel,
           rating: updates.rating,
-          metadata: updates.metadata as any
+          metadata: updates.metadata as any,
+          version_number: (currentPrompt.version_number || 1) + 1
         })
         .eq('id', id)
         .select()
@@ -185,6 +227,7 @@ export const usePrompts = () => {
           ? { 
               ...prompt, 
               ...updates, 
+              versionNumber: (currentPrompt.version_number || 1) + 1,
               updatedAt: new Date(data.updated_at) 
             }
           : prompt

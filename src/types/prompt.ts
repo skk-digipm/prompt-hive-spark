@@ -12,6 +12,9 @@ export interface Prompt {
   sourceUrl?: string;
   aiModel?: string;
   rating?: number; // 1-5 stars
+  versionNumber?: number;
+  parentPromptId?: string;
+  isCurrentVersion?: boolean;
   metadata?: {
     sourceUrl?: string;
     sourceDomain?: string;

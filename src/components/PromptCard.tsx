@@ -4,21 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Copy, Edit, Trash2, Star, BarChart3, Clock, Eye, Wand2 } from 'lucide-react';
+import { Copy, Edit, Trash2, Star, BarChart3, Clock, Eye, Wand2, History } from 'lucide-react';
 import { Prompt } from '@/types/prompt';
 import { useToast } from '@/hooks/use-toast';
 import { PromptRewriter } from './PromptRewriter';
+import { PromptVersionHistory } from './PromptVersionHistory';
 
 interface PromptCardProps {
   prompt: Prompt;
   onEdit: (prompt: Prompt) => void;
   onDelete: (id: string) => void;
   onUse: (id: string) => void;
+  onUpdate?: (updatedPrompt: Prompt) => void;
 }
 
-export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps) => {
+export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: PromptCardProps) => {
   const [showFullContent, setShowFullContent] = useState(false);
   const [showRewriter, setShowRewriter] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
   const { toast } = useToast();
 
   const copyToClipboard = async (text: string) => {
@@ -96,6 +99,14 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps)
           </div>
           
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowVersionHistory(true)}
+              className="h-8 w-8 p-0 hover:bg-accent"
+            >
+              <History className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -202,6 +213,16 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse }: PromptCardProps)
         onUsePrompt={(content) => {
           copyToClipboard(content);
           setShowRewriter(false);
+        }}
+      />
+
+      <PromptVersionHistory
+        isOpen={showVersionHistory}
+        onClose={() => setShowVersionHistory(false)}
+        prompt={prompt}
+        onUseVersion={(versionPrompt) => {
+          copyToClipboard(versionPrompt.content);
+          setShowVersionHistory(false);
         }}
       />
     </Card>

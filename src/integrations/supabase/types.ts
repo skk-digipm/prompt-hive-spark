@@ -48,8 +48,10 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          is_current_version: boolean | null
           is_long_prompt: boolean | null
           metadata: Json | null
+          parent_prompt_id: string | null
           rating: number | null
           source_url: string | null
           tags: string[] | null
@@ -58,6 +60,7 @@ export type Database = {
           updated_at: string
           usage_count: number
           user_id: string | null
+          version_number: number | null
         }
         Insert: {
           ai_model?: string | null
@@ -65,8 +68,10 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          is_current_version?: boolean | null
           is_long_prompt?: boolean | null
           metadata?: Json | null
+          parent_prompt_id?: string | null
           rating?: number | null
           source_url?: string | null
           tags?: string[] | null
@@ -75,6 +80,7 @@ export type Database = {
           updated_at?: string
           usage_count?: number
           user_id?: string | null
+          version_number?: number | null
         }
         Update: {
           ai_model?: string | null
@@ -82,8 +88,10 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          is_current_version?: boolean | null
           is_long_prompt?: boolean | null
           metadata?: Json | null
+          parent_prompt_id?: string | null
           rating?: number | null
           source_url?: string | null
           tags?: string[] | null
@@ -92,8 +100,17 @@ export type Database = {
           updated_at?: string
           usage_count?: number
           user_id?: string | null
+          version_number?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "prompts_parent_prompt_id_fkey"
+            columns: ["parent_prompt_id"]
+            isOneToOne: false
+            referencedRelation: "prompts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tags: {
         Row: {
