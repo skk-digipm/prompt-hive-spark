@@ -16,6 +16,16 @@ serve(async (req) => {
 
   try {
     const { prompt } = await req.json();
+    
+    if (!prompt) {
+      throw new Error('Prompt is required');
+    }
+
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
+
+    console.log('Enhancing prompt:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -40,7 +50,20 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
+    }
+
     const data = await response.json();
+    console.log('OpenAI response:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Unexpected OpenAI response structure:', data);
+      throw new Error('Invalid response from OpenAI API');
+    }
+
     const enhancedPrompt = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ enhancedPrompt }), {
@@ -48,7 +71,9 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in enhance-prompt function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'An unexpected error occurred' 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

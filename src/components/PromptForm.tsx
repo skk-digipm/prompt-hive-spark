@@ -175,18 +175,17 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
               <SelectTrigger className="border-border/50">
                 <SelectValue placeholder="Select category..." />
               </SelectTrigger>
-              <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-                <SelectItem value="Content Creation">Content Creation</SelectItem>
-                <SelectItem value="Development">Development</SelectItem>
-                <SelectItem value="Business">Business</SelectItem>
-                <SelectItem value="Creative">Creative</SelectItem>
-                <SelectItem value="Analysis">Analysis</SelectItem>
-              </SelectContent>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="Content Creation">Content Creation</SelectItem>
+                  <SelectItem value="Development">Development</SelectItem>
+                  <SelectItem value="Business">Business</SelectItem>
+                  <SelectItem value="Analysis">Analysis</SelectItem>
+                </SelectContent>
             </Select>
           </div>
 
