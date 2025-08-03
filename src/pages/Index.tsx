@@ -123,16 +123,9 @@ const Index = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Download className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Export</p>
-                      </TooltipContent>
-                    </Tooltip>
+                    <Button variant="outline" size="sm">
+                      <Download className="w-4 h-4" />
+                    </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="bg-background border border-border shadow-elevated z-50">
                     <DropdownMenuItem onClick={handleExportCSV} className="cursor-pointer">

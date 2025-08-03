@@ -115,7 +115,7 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
         </Popover>
 
         {/* Filters Button */}
-        <Button variant="outline" className="border-border/50">
+        <Button variant="outline" className="border-border/50" onClick={() => console.log('Filters clicked')}>
           <Filter className="w-4 h-4 mr-2" />
           Filters
         </Button>
