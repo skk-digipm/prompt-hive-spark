@@ -170,11 +170,21 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
 
           {prompt.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {prompt.tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="outline" className="text-xs">
-                  {tag}
-                </Badge>
-              ))}
+              {prompt.tags.slice(0, 3).map((tag, index) => {
+                const colors = [
+                  'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700',
+                  'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700',
+                  'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700',
+                  'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700',
+                  'bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/30 dark:text-pink-300 dark:border-pink-700'
+                ];
+                const colorClass = colors[index % colors.length];
+                return (
+                  <Badge key={tag} className={`text-xs border ${colorClass}`}>
+                    {tag}
+                  </Badge>
+                );
+              })}
               {prompt.tags.length > 3 && (
                 <Badge variant="outline" className="text-xs text-muted-foreground">
                   +{prompt.tags.length - 3} more

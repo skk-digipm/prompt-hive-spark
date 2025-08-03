@@ -98,9 +98,10 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
         <div className="space-y-4 mt-4">
           {loading ? (
             <div className="text-center py-8">Loading version history...</div>
-          ) : versions.length === 0 ? (
+          ) : versions.length <= 1 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No version history available
+              <p>No history available for this prompt yet</p>
+              <p className="text-sm mt-2">History will be created when you edit and save this prompt</p>
             </div>
           ) : (
             versions.map((version, index) => (
@@ -155,6 +156,12 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
               </Card>
             ))
           )}
+        </div>
+        
+        <div className="flex justify-end mt-6 pt-4 border-t">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
