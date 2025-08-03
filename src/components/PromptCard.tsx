@@ -87,6 +87,11 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
                 <BarChart3 className="w-3 h-3" />
                 {prompt.usageCount} uses
               </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
+                  v{prompt.versionNumber || 1}
+                </span>
+              </div>
               {renderStars(prompt.rating)}
             </div>
             {prompt.metadata?.sourceUrl && (
@@ -183,7 +188,11 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
                   'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700',
                   'bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700',
                   'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700',
-                  'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700'
+                  'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-700',
+                  'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-700',
+                  'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700',
+                  'bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/30 dark:text-lime-300 dark:border-lime-700',
+                  'bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700'
                 ];
                 const colorClass = colors[index % colors.length];
                 return (

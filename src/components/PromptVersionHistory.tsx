@@ -98,19 +98,19 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
         <div className="space-y-4 mt-4">
           {loading ? (
             <div className="text-center py-8">Loading version history...</div>
-          ) : versions.length <= 1 ? (
+          ) : versions.filter(v => !v.isCurrentVersion).length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>No history available for this prompt yet</p>
               <p className="text-sm mt-2">History will be created when you edit and save this prompt</p>
             </div>
           ) : (
-            versions.map((version, index) => (
-              <Card key={version.id} className={`${version.isCurrentVersion ? 'border-primary' : 'border-border'}`}>
+            versions.filter(v => !v.isCurrentVersion).map((version, index) => (
+              <Card key={version.id} className="border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Badge variant={version.isCurrentVersion ? "default" : "outline"}>
-                        {version.isCurrentVersion ? 'Current' : `v${version.versionNumber}`}
+                      <Badge variant="outline">
+                        v{version.versionNumber}
                       </Badge>
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Clock className="w-3 h-3" />

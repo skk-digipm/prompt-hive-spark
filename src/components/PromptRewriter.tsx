@@ -23,20 +23,22 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
   const generateRewrite = async () => {
     setIsGenerating(true);
     try {
-      // Simulate AI rewrite - replace with actual AI API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const improvements = [
-        "Be more specific and detailed in your request",
-        "Add context about the desired outcome",
-        "Include examples or constraints",
-        "Specify the format of the response",
-        "Add tone and style preferences"
-      ];
-      
-      const randomImprovement = improvements[Math.floor(Math.random() * improvements.length)];
-      
-      setRewrittenPrompt(`${prompt.content}\n\n[AI Enhancement: ${randomImprovement}]\n\nPlease provide a detailed response that considers the specific context and requirements mentioned above.`);
+      const response = await fetch('/functions/v1/enhance-prompt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt.content
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to enhance prompt');
+      }
+
+      const data = await response.json();
+      setRewrittenPrompt(data.enhancedPrompt);
       
       toast({
         title: "Prompt Enhanced",
@@ -79,7 +81,7 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl w-[98vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold bg-gradient-text bg-clip-text text-transparent flex items-center gap-2">
             <Sparkles className="w-5 h-5" />
@@ -88,21 +90,22 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          {/* Enhanced Button */}
-          <div className="flex justify-center">
-            <Button
-              onClick={generateRewrite}
-              disabled={isGenerating}
-              className="bg-gradient-primary hover:opacity-90"
-              size="lg"
-            >
-              <Wand2 className="w-4 h-4 mr-2" />
-              {isGenerating ? 'Enhancing...' : 'Enhance with AI'}
-            </Button>
-          </div>
+          {!rewrittenPrompt && (
+            <div className="flex justify-center">
+              <Button
+                onClick={generateRewrite}
+                disabled={isGenerating}
+                className="bg-gradient-primary hover:opacity-90"
+                size="lg"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                {isGenerating ? 'Enhancing...' : 'Enhance with AI'}
+              </Button>
+            </div>
+          )}
 
           {/* Side by side comparison - Always visible */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Original Prompt */}
             <div className="space-y-3 border rounded-lg p-4 bg-card">
               <div className="flex items-center justify-between">

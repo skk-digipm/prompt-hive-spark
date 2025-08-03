@@ -22,11 +22,9 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('');
-  const [tone, setTone] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
-  const [aiModel, setAiModel] = useState('');
   const [rating, setRating] = useState<number | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -37,10 +35,8 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
       setTitle(editPrompt.title || '');
       setContent(editPrompt.content || '');
       setCategory(editPrompt.category || '');
-      setTone(editPrompt.tone || '');
       setTags(editPrompt.tags || []);
       setSourceUrl(editPrompt.sourceUrl || '');
-      setAiModel(editPrompt.aiModel || '');
       setRating(editPrompt.rating || undefined);
     } else {
       resetForm();
@@ -64,10 +60,8 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
         title: title.trim(),
         content: content.trim(),
         category: category.trim() || undefined,
-        tone: tone.trim() || undefined,
         tags,
         sourceUrl: sourceUrl.trim() || undefined,
-        aiModel: aiModel.trim() || undefined,
         rating
       });
       
@@ -92,11 +86,9 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
     setTitle('');
     setContent('');
     setCategory('');
-    setTone('');
     setTags([]);
     setNewTag('');
     setSourceUrl('');
-    setAiModel('');
     setRating(undefined);
   };
 
@@ -177,63 +169,25 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="border-border/50">
-                  <SelectValue placeholder="Select category..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="Content Creation">Content Creation</SelectItem>
-                  <SelectItem value="Development">Development</SelectItem>
-                  <SelectItem value="Business">Business</SelectItem>
-                  <SelectItem value="Creative">Creative</SelectItem>
-                  <SelectItem value="Analysis">Analysis</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tone">Tone</Label>
-              <Select value={tone} onValueChange={setTone}>
-                <SelectTrigger className="border-border/50">
-                  <SelectValue placeholder="Select tone..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Professional">Professional</SelectItem>
-                  <SelectItem value="Casual">Casual</SelectItem>
-                  <SelectItem value="Friendly">Friendly</SelectItem>
-                  <SelectItem value="Formal">Formal</SelectItem>
-                  <SelectItem value="Creative">Creative</SelectItem>
-                  <SelectItem value="Analytical">Analytical</SelectItem>
-                  <SelectItem value="Persuasive">Persuasive</SelectItem>
-                  <SelectItem value="Informative">Informative</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="aiModel">AI Model</Label>
-              <Select value={aiModel} onValueChange={setAiModel}>
-                <SelectTrigger className="border-border/50">
-                  <SelectValue placeholder="Select AI model..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ChatGPT">ChatGPT</SelectItem>
-                  <SelectItem value="Claude">Claude</SelectItem>
-                  <SelectItem value="Gemini">Gemini</SelectItem>
-                  <SelectItem value="Midjourney">Midjourney</SelectItem>
-                  <SelectItem value="DALL-E">DALL-E</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">Category</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="border-border/50">
+                <SelectValue placeholder="Select category..." />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+                <SelectItem value="Content Creation">Content Creation</SelectItem>
+                <SelectItem value="Development">Development</SelectItem>
+                <SelectItem value="Business">Business</SelectItem>
+                <SelectItem value="Creative">Creative</SelectItem>
+                <SelectItem value="Analysis">Analysis</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">

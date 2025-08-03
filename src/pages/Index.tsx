@@ -215,8 +215,7 @@ const Index = () => {
             allTags={allTags}
             allCategories={allCategories}
           />
-          <div className="flex items-center justify-between">
-            <div></div>
+          <div className="flex justify-end">
             <FilterDropdown
               filter={filter}
               onFilterChange={setFilter}
