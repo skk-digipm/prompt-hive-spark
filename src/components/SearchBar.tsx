@@ -114,6 +114,12 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
           </PopoverContent>
         </Popover>
 
+        {/* Filters Button */}
+        <Button variant="outline" className="border-border/50">
+          <Filter className="w-4 h-4 mr-2" />
+          Filters
+        </Button>
+
         {/* Clear Filters */}
         {hasActiveFilters && (
           <Button
