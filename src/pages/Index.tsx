@@ -34,17 +34,24 @@ const Index = () => {
   const [guestPromptCount, setGuestPromptCount] = useState(0);
 
   const handleSavePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
-    await savePrompt(promptData);
+    if (editingPrompt) {
+      // Update existing prompt
+      await updatePrompt(editingPrompt.id, promptData);
+    } else {
+      // Create new prompt
+      await savePrompt(promptData);
+      
+      // Check if user is guest and this is their first prompt
+      if (!user && guestPromptCount === 0) {
+        setGuestPromptCount(1);
+        setTimeout(() => {
+          setShowGuestPrompt(true);
+        }, 1000);
+      }
+    }
+    
     setShowForm(false);
     setEditingPrompt(null);
-    
-    // Check if user is guest and this is their first prompt
-    if (!user && guestPromptCount === 0) {
-      setGuestPromptCount(1);
-      setTimeout(() => {
-        setShowGuestPrompt(true);
-      }, 1000);
-    }
   };
 
   const handleEditPrompt = (prompt: Prompt) => {
@@ -208,7 +215,8 @@ const Index = () => {
             allTags={allTags}
             allCategories={allCategories}
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <div></div>
             <FilterDropdown
               filter={filter}
               onFilterChange={setFilter}

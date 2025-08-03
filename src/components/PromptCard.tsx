@@ -216,9 +216,10 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
             onClick={() => setShowRewriter(true)}
             variant="outline"
             size="sm"
-            className="px-3"
+            className="flex-1"
           >
-            <Wand2 className="w-4 h-4" />
+            <Wand2 className="w-4 h-4 mr-2" />
+            Enhance with AI
           </Button>
         </div>
       </CardFooter>
