@@ -73,6 +73,9 @@ export const usePrompts = () => {
   const filteredPrompts = prompts.filter(prompt => {
     // Only show current versions in the main list
     if (!prompt.isCurrentVersion) return false;
+    
+    // If user is signed out, don't show any prompts
+    if (!user) return false;
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();

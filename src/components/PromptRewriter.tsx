@@ -79,7 +79,7 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold bg-gradient-text bg-clip-text text-transparent flex items-center gap-2">
             <Sparkles className="w-5 h-5" />
@@ -102,7 +102,7 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
           </div>
 
           {/* Side by side comparison - Always visible */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {/* Original Prompt */}
             <div className="space-y-3 border rounded-lg p-4 bg-card">
               <div className="flex items-center justify-between">
