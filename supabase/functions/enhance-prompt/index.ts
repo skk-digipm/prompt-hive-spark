@@ -38,7 +38,7 @@ serve(async (req) => {
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert prompt engineer. Your task is to enhance and improve the given prompt to make it more effective, specific, and clear. Add relevant context, structure, and instructions that will help get better results from AI models. Keep the core intent but make it more powerful and detailed.' 
+            content: 'You are an expert prompt engineer. Your task is to enhance and improve the given prompt to make it more effective, specific, and clear. Add relevant context, structure, and instructions that will help get better results from AI models. Keep the core intent but make it more powerful and detailed. Return only the enhanced prompt without any additional explanation or commentary.' 
           },
           { 
             role: 'user', 

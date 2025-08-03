@@ -215,14 +215,6 @@ const Index = () => {
             allTags={allTags}
             allCategories={allCategories}
           />
-          <div className="flex justify-end">
-            <FilterDropdown
-              filter={filter}
-              onFilterChange={setFilter}
-              allTags={allTags}
-              allCategories={allCategories}
-            />
-          </div>
         </div>
 
         {/* Context Menu Wrapper */}

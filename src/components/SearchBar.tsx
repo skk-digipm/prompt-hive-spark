@@ -50,19 +50,18 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
 
   return (
     <div className="space-y-4">
-      {/* Search Input */}
-      <form onSubmit={handleSearchSubmit} className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          placeholder="Search prompts by title, content, or tags..."
-          className="pl-10 pr-4 border-border/50 focus:ring-primary"
-        />
-      </form>
+      {/* Search Input and Filters in one row */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 min-w-80">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+          <Input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="Search prompts by title, content, or tags..."
+            className="pl-10 pr-4 border-border/50 focus:ring-primary"
+          />
+        </form>
 
-      {/* Filters Row */}
-      <div className="flex items-center gap-3 flex-wrap">
         {/* Category Filter */}
         <Select value={filter.category || 'all'} onValueChange={handleCategoryChange}>
           <SelectTrigger className="w-48 border-border/50">
@@ -128,6 +127,7 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
           </Button>
         )}
       </div>
+
 
       {/* Active Filters Display */}
       {hasActiveFilters && (
