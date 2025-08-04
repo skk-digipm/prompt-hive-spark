@@ -9,39 +9,33 @@ export const TextSelectionHandler = () => {
   const { savePrompt } = usePrompts();
 
   useEffect(() => {
-    const handleTextSelection = (event: MouseEvent) => {
-      // Only show on right-click
-      if (event.button !== 2) return;
-
+    const handleTextSelection = () => {
       const selection = window.getSelection();
       const text = selection?.toString().trim();
 
       if (text && text.length > 10) { // Minimum text length
-        event.preventDefault();
-        event.stopPropagation();
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
         
         setSelectedText(text);
-        setMenuPosition({ x: event.clientX, y: event.clientY });
+        setMenuPosition({ 
+          x: rect.right + 10, 
+          y: rect.top + window.scrollY - 10 
+        });
         setShowMenu(true);
+      } else {
+        setShowMenu(false);
+        setSelectedText('');
       }
     };
 
-    const handleContextMenu = (event: MouseEvent) => {
-      const selection = window.getSelection();
-      const text = selection?.toString().trim();
-
-      if (text && text.length > 10) {
-        event.preventDefault(); // Prevent default context menu
-      }
-    };
-
-    // Add event listeners
-    document.addEventListener('mousedown', handleTextSelection);
-    document.addEventListener('contextmenu', handleContextMenu);
+    // Add event listeners for text selection
+    document.addEventListener('mouseup', handleTextSelection);
+    document.addEventListener('keyup', handleTextSelection);
 
     return () => {
-      document.removeEventListener('mousedown', handleTextSelection);
-      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('mouseup', handleTextSelection);
+      document.removeEventListener('keyup', handleTextSelection);
     };
   }, []);
 

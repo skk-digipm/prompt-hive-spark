@@ -105,50 +105,18 @@ export const ContextMenuCapture = ({
     <div 
       className="context-menu-capture fixed z-[9999] pointer-events-none"
       style={{
-        left: `${Math.min(position.x, window.innerWidth - 320)}px`,
-        top: `${Math.min(position.y, window.innerHeight - 200)}px`,
+        left: `${Math.min(position.x, window.innerWidth - 200)}px`,
+        top: `${Math.max(position.y, 10)}px`,
       }}
     >
-      <Card className="w-80 shadow-2xl border-2 border-primary/20 bg-card/95 backdrop-blur-sm pointer-events-auto animate-in fade-in-0 zoom-in-95">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-primary-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground">
-                PromptHive Assistant
-              </span>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0 hover:bg-muted"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-          
-          <div className="mb-3">
-            <div className="text-xs text-muted-foreground mb-1">Selected text:</div>
-            <div className="text-xs bg-muted/50 p-2 rounded border max-h-20 overflow-y-auto">
-              {selectedText.length > 150 
-                ? selectedText.substring(0, 150) + '...'
-                : selectedText
-              }
-            </div>
-          </div>
-
-          <Button
-            onClick={handleSavePrompt}
-            className="w-full bg-gradient-primary hover:opacity-90 text-sm"
-            size="sm"
-          >
-            Save to PromptHive
-          </Button>
-        </CardContent>
-      </Card>
+      <Button
+        onClick={handleSavePrompt}
+        className="bg-gradient-primary hover:opacity-90 text-sm shadow-2xl border border-primary/20 pointer-events-auto animate-in fade-in-0 zoom-in-95 backdrop-blur-sm"
+        size="sm"
+      >
+        <Sparkles className="w-4 h-4 mr-2" />
+        Save to PromptHive
+      </Button>
     </div>
   );
 };
