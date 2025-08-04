@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, Filter, X, Tag } from 'lucide-react';
 import { PromptFilter } from '@/types/prompt';
+import { FilterDropdown } from '@/components/FilterDropdown';
 
 interface SearchBarProps {
   filter: PromptFilter;
@@ -114,11 +115,13 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
           </PopoverContent>
         </Popover>
 
-        {/* Filters Button */}
-        <Button variant="outline" className="border-border/50" onClick={() => console.log('Filters clicked')}>
-          <Filter className="w-4 h-4 mr-2" />
-          Filters
-        </Button>
+        {/* Filters Dropdown */}
+        <FilterDropdown
+          filter={filter}
+          onFilterChange={onFilterChange}
+          allTags={allTags}
+          allCategories={allCategories}
+        />
 
         {/* Clear Filters */}
         {hasActiveFilters && (
