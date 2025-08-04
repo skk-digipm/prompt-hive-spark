@@ -109,7 +109,19 @@ export const TextSelectionHandler = () => {
   // Always render the button for testing
   return (
     <>
-      <div style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 9999, background: 'red', color: 'white', padding: '5px' }}>
+      <div style={{ 
+        position: 'fixed', 
+        top: '10px', 
+        right: '10px', 
+        zIndex: 9999, 
+        background: 'red', 
+        color: 'white', 
+        padding: '5px',
+        userSelect: 'none',
+        pointerEvents: 'none',
+        fontFamily: 'monospace',
+        fontSize: '12px'
+      }}>
         Debug: showMenu={showMenu.toString()}, text length={selectedText.length}
       </div>
       
