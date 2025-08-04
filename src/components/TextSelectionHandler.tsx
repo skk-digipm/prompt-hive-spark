@@ -16,47 +16,65 @@ export const TextSelectionHandler = () => {
   useEffect(() => {
     console.log('TextSelectionHandler mounted');
     
-    const handleTextSelection = (e: Event) => {
-      console.log('Text selection event triggered');
+    const handleTextSelection = (e: MouseEvent) => {
+      console.log('Mouse up event triggered');
       
-      // Small delay to ensure selection is complete
+      // Longer delay to ensure selection is fully stabilized
       setTimeout(() => {
         const selection = window.getSelection();
-        const text = selection?.toString().trim();
-        console.log('Selected text:', text, 'Length:', text?.length);
+        
+        if (!selection || selection.rangeCount === 0) {
+          console.log('No selection or range found');
+          setShowMenu(false);
+          setSelectedText('');
+          return;
+        }
+
+        const text = selection.toString().trim();
+        console.log('Selected text:', `"${text}"`, 'Length:', text.length);
 
         if (text && text.length > 10) {
-          const range = selection?.getRangeAt(0);
-          if (range) {
+          try {
+            const range = selection.getRangeAt(0);
             const rect = range.getBoundingClientRect();
             
-            console.log('Showing menu at position:', { x: rect.right + 10, y: rect.top + window.scrollY - 10 });
+            // Calculate better position
+            const buttonX = Math.min(rect.right + 10, window.innerWidth - 200);
+            const buttonY = Math.max(rect.top + window.scrollY - 10, 10);
+            
+            console.log('Showing menu at position:', { x: buttonX, y: buttonY });
             
             setSelectedText(text);
-            setMenuPosition({ 
-              x: rect.right + 10, 
-              y: rect.top + window.scrollY - 10 
-            });
+            setMenuPosition({ x: buttonX, y: buttonY });
             setShowMenu(true);
+          } catch (error) {
+            console.error('Error getting selection range:', error);
+            setShowMenu(false);
+            setSelectedText('');
           }
         } else {
-          console.log('Text too short or no text selected, hiding menu');
+          console.log('Text too short, hiding menu');
           setShowMenu(false);
           setSelectedText('');
         }
-      }, 100);
+      }, 200);
     };
 
-    const handleClickOutside = (e: Event) => {
-      const selection = window.getSelection();
-      if (!selection?.toString().trim()) {
-        setShowMenu(false);
-        setSelectedText('');
+    const handleClickOutside = (e: MouseEvent) => {
+      // Check if click is outside the floating button
+      const target = e.target as Element;
+      if (!target.closest('.floating-save-button')) {
+        const selection = window.getSelection();
+        if (!selection?.toString().trim()) {
+          console.log('Clearing selection due to outside click');
+          setShowMenu(false);
+          setSelectedText('');
+        }
       }
     };
 
+    // Only use mouseup event for better reliability
     document.addEventListener('mouseup', handleTextSelection);
-    document.addEventListener('selectionchange', handleTextSelection);
     document.addEventListener('click', handleClickOutside);
     
     console.log('Event listeners added');
@@ -64,7 +82,6 @@ export const TextSelectionHandler = () => {
     return () => {
       console.log('TextSelectionHandler unmounting');
       document.removeEventListener('mouseup', handleTextSelection);
-      document.removeEventListener('selectionchange', handleTextSelection);
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
@@ -153,7 +170,7 @@ export const TextSelectionHandler = () => {
         >
           <Button
             onClick={handleSavePrompt}
-            className="bg-gradient-primary hover:opacity-90 text-sm shadow-2xl border border-primary/20 animate-in fade-in-0 zoom-in-95 backdrop-blur-sm"
+            className="bg-gradient-primary hover:opacity-90 text-sm shadow-2xl border border-primary/20 animate-in fade-in-0 zoom-in-95 backdrop-blur-sm floating-save-button"
             size="sm"
           >
             <Sparkles className="w-4 h-4 mr-2" />
