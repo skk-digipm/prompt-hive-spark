@@ -8,7 +8,7 @@ export const TextSelectionHandler = () => {
   const [selectedText, setSelectedText] = useState('');
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
-  const { savePrompt } = usePrompts();
+  const { savePrompt, loadPrompts } = usePrompts();
   const { toast } = useToast();
 
   console.log('TextSelectionHandler rendering, showMenu:', showMenu, 'selectedText:', selectedText);
@@ -139,15 +139,13 @@ export const TextSelectionHandler = () => {
     };
 
     try {
-      console.log('Saving prompt with data:', promptData);
       await savePrompt(promptData);
+      await loadPrompts(); // Refresh the prompt list
       
       toast({
         title: "Prompt saved!",
         description: `"${title}" saved to PromptHive`,
       });
-      
-      console.log('Prompt saved successfully');
     } catch (error) {
       console.error('Error saving prompt:', error);
       toast({
@@ -161,25 +159,8 @@ export const TextSelectionHandler = () => {
     setSelectedText('');
   };
 
-  // Always render the button for testing
   return (
     <>
-      <div style={{ 
-        position: 'fixed', 
-        top: '10px', 
-        right: '10px', 
-        zIndex: 9999, 
-        background: 'red', 
-        color: 'white', 
-        padding: '5px',
-        userSelect: 'none',
-        pointerEvents: 'none',
-        fontFamily: 'monospace',
-        fontSize: '12px'
-      }}>
-        Debug: showMenu={showMenu.toString()}, text length={selectedText.length}
-      </div>
-      
       {showMenu && selectedText && (
         <div 
           style={{
