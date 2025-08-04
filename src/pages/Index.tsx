@@ -11,7 +11,7 @@ import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { StatsCard } from '@/components/StatsCard';
-import { TextSelectionHandler } from '@/components/TextSelectionHandler';
+
 import { AuthDialog } from '@/components/AuthDialog';
 import { UserProfile } from '@/components/UserProfile';
 import { GuestSignupPrompt } from '@/components/GuestSignupPrompt';
@@ -309,8 +309,6 @@ const Index = () => {
         open={showLoginPopup}
         onOpenChange={setShowLoginPopup}
       />
-      
-      <TextSelectionHandler />
     </div>
   );
 };
