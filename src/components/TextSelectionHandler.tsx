@@ -16,40 +16,56 @@ export const TextSelectionHandler = () => {
   useEffect(() => {
     console.log('TextSelectionHandler mounted');
     
-    const handleTextSelection = () => {
+    const handleTextSelection = (e: Event) => {
       console.log('Text selection event triggered');
-      const selection = window.getSelection();
-      const text = selection?.toString().trim();
-      console.log('Selected text:', text, 'Length:', text?.length);
+      
+      // Small delay to ensure selection is complete
+      setTimeout(() => {
+        const selection = window.getSelection();
+        const text = selection?.toString().trim();
+        console.log('Selected text:', text, 'Length:', text?.length);
 
-      if (text && text.length > 10) {
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-        
-        console.log('Showing menu at position:', { x: rect.right + 10, y: rect.top + window.scrollY - 10 });
-        
-        setSelectedText(text);
-        setMenuPosition({ 
-          x: rect.right + 10, 
-          y: rect.top + window.scrollY - 10 
-        });
-        setShowMenu(true);
-      } else {
-        console.log('Text too short or no text selected, hiding menu');
+        if (text && text.length > 10) {
+          const range = selection?.getRangeAt(0);
+          if (range) {
+            const rect = range.getBoundingClientRect();
+            
+            console.log('Showing menu at position:', { x: rect.right + 10, y: rect.top + window.scrollY - 10 });
+            
+            setSelectedText(text);
+            setMenuPosition({ 
+              x: rect.right + 10, 
+              y: rect.top + window.scrollY - 10 
+            });
+            setShowMenu(true);
+          }
+        } else {
+          console.log('Text too short or no text selected, hiding menu');
+          setShowMenu(false);
+          setSelectedText('');
+        }
+      }, 100);
+    };
+
+    const handleClickOutside = (e: Event) => {
+      const selection = window.getSelection();
+      if (!selection?.toString().trim()) {
         setShowMenu(false);
         setSelectedText('');
       }
     };
 
     document.addEventListener('mouseup', handleTextSelection);
-    document.addEventListener('keyup', handleTextSelection);
+    document.addEventListener('selectionchange', handleTextSelection);
+    document.addEventListener('click', handleClickOutside);
     
     console.log('Event listeners added');
 
     return () => {
       console.log('TextSelectionHandler unmounting');
       document.removeEventListener('mouseup', handleTextSelection);
-      document.removeEventListener('keyup', handleTextSelection);
+      document.removeEventListener('selectionchange', handleTextSelection);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
