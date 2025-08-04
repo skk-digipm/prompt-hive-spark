@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ContextMenuCapture } from './ContextMenuCapture';
+import { Button } from '@/components/ui/button';
+import { Sparkles } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { usePrompts } from '@/hooks/usePrompts';
 
 export const TextSelectionHandler = () => {
@@ -7,6 +9,9 @@ export const TextSelectionHandler = () => {
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
   const { savePrompt } = usePrompts();
+  const { toast } = useToast();
+
+  console.log('TextSelectionHandler rendering, showMenu:', showMenu, 'selectedText:', selectedText);
 
   useEffect(() => {
     console.log('TextSelectionHandler mounted');
@@ -17,7 +22,7 @@ export const TextSelectionHandler = () => {
       const text = selection?.toString().trim();
       console.log('Selected text:', text, 'Length:', text?.length);
 
-      if (text && text.length > 10) { // Minimum text length
+      if (text && text.length > 10) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         
@@ -36,37 +41,94 @@ export const TextSelectionHandler = () => {
       }
     };
 
-    // Add event listeners for text selection
     document.addEventListener('mouseup', handleTextSelection);
     document.addEventListener('keyup', handleTextSelection);
     
     console.log('Event listeners added');
 
     return () => {
-      console.log('TextSelectionHandler unmounting, removing event listeners');
+      console.log('TextSelectionHandler unmounting');
       document.removeEventListener('mouseup', handleTextSelection);
       document.removeEventListener('keyup', handleTextSelection);
     };
   }, []);
 
-  const handleSavePrompt = async (promptData: any) => {
-    await savePrompt(promptData);
-    setShowMenu(false);
-  };
+  const handleSavePrompt = async () => {
+    console.log('Save prompt clicked');
+    
+    const url = window.location.href;
+    const domain = window.location.hostname;
+    
+    const title = selectedText.length > 50 
+      ? selectedText.substring(0, 50) + '...'
+      : selectedText;
 
-  const handleCloseMenu = () => {
+    let category = 'General';
+    if (domain.includes('chatgpt') || domain.includes('openai')) {
+      category = 'ChatGPT';
+    } else if (domain.includes('claude') || domain.includes('anthropic')) {
+      category = 'Claude';
+    }
+
+    const promptData = {
+      title,
+      content: selectedText,
+      category,
+      tags: [domain.split('.')[0]],
+      metadata: {
+        sourceUrl: url,
+        sourceDomain: domain,
+        capturedAt: new Date(),
+        selectionContext: document.title
+      }
+    };
+
+    try {
+      await savePrompt(promptData);
+      toast({
+        title: "Prompt saved!",
+        description: `Captured from ${domain}`,
+      });
+    } catch (error) {
+      console.error('Error saving prompt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save prompt",
+        variant: "destructive"
+      });
+    }
+
     setShowMenu(false);
     setSelectedText('');
   };
 
-  if (!showMenu || !selectedText) return null;
-
+  // Always render the button for testing
   return (
-    <ContextMenuCapture
-      selectedText={selectedText}
-      position={menuPosition}
-      onClose={handleCloseMenu}
-      onSave={handleSavePrompt}
-    />
+    <>
+      <div style={{ position: 'fixed', top: '10px', right: '10px', zIndex: 9999, background: 'red', color: 'white', padding: '5px' }}>
+        Debug: showMenu={showMenu.toString()}, text length={selectedText.length}
+      </div>
+      
+      {showMenu && selectedText && (
+        <div 
+          style={{
+            position: 'fixed',
+            left: `${Math.min(menuPosition.x, window.innerWidth - 200)}px`,
+            top: `${Math.max(menuPosition.y, 10)}px`,
+            zIndex: 9999,
+            pointerEvents: 'auto'
+          }}
+        >
+          <Button
+            onClick={handleSavePrompt}
+            className="bg-gradient-primary hover:opacity-90 text-sm shadow-2xl border border-primary/20 animate-in fade-in-0 zoom-in-95 backdrop-blur-sm"
+            size="sm"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Save to PromptHive
+          </Button>
+        </div>
+      )}
+    </>
   );
 };
