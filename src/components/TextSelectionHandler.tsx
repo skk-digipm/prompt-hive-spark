@@ -84,16 +84,20 @@ export const TextSelectionHandler = () => {
     };
 
     try {
+      console.log('Saving prompt with data:', promptData);
       await savePrompt(promptData);
+      
       toast({
         title: "Prompt saved!",
-        description: `Captured from ${domain}`,
+        description: `"${title}" saved to PromptHive`,
       });
+      
+      console.log('Prompt saved successfully');
     } catch (error) {
       console.error('Error saving prompt:', error);
       toast({
         title: "Error",
-        description: "Failed to save prompt",
+        description: "Failed to save prompt. Please try again.",
         variant: "destructive"
       });
     }
