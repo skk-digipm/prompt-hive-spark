@@ -19,45 +19,67 @@ export const TextSelectionHandler = () => {
     const handleTextSelection = (e: MouseEvent) => {
       console.log('Mouse up event triggered');
       
-      // Longer delay to ensure selection is fully stabilized
-      setTimeout(() => {
-        const selection = window.getSelection();
+      // Capture selection immediately - no delay
+      const selection = window.getSelection();
+      console.log('Selection object:', selection);
+      
+      if (!selection) {
+        console.log('No selection object found');
+        setShowMenu(false);
+        setSelectedText('');
+        return;
+      }
+
+      // Multiple ways to get selected text
+      let text = '';
+      try {
+        // Method 1: Direct toString
+        text = selection.toString().trim();
+        console.log('Method 1 - toString():', `"${text}"`, 'Length:', text.length);
         
-        if (!selection || selection.rangeCount === 0) {
-          console.log('No selection or range found');
+        // Method 2: Range-based (fallback)
+        if (!text && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          text = range.toString().trim();
+          console.log('Method 2 - range.toString():', `"${text}"`, 'Length:', text.length);
+        }
+        
+        // Method 3: Text content (fallback)
+        if (!text && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          const contents = range.cloneContents();
+          text = contents.textContent?.trim() || '';
+          console.log('Method 3 - textContent:', `"${text}"`, 'Length:', text.length);
+        }
+      } catch (error) {
+        console.error('Error getting selected text:', error);
+      }
+
+      if (text && text.length > 10) {
+        try {
+          const range = selection.getRangeAt(0);
+          const rect = range.getBoundingClientRect();
+          
+          // Calculate better position
+          const buttonX = Math.min(rect.right + 10, window.innerWidth - 200);
+          const buttonY = Math.max(rect.top + window.scrollY - 10, 10);
+          
+          console.log('Showing menu at position:', { x: buttonX, y: buttonY });
+          console.log('Final selected text:', `"${text}"`);
+          
+          setSelectedText(text);
+          setMenuPosition({ x: buttonX, y: buttonY });
+          setShowMenu(true);
+        } catch (error) {
+          console.error('Error getting selection range:', error);
           setShowMenu(false);
           setSelectedText('');
-          return;
         }
-
-        const text = selection.toString().trim();
-        console.log('Selected text:', `"${text}"`, 'Length:', text.length);
-
-        if (text && text.length > 10) {
-          try {
-            const range = selection.getRangeAt(0);
-            const rect = range.getBoundingClientRect();
-            
-            // Calculate better position
-            const buttonX = Math.min(rect.right + 10, window.innerWidth - 200);
-            const buttonY = Math.max(rect.top + window.scrollY - 10, 10);
-            
-            console.log('Showing menu at position:', { x: buttonX, y: buttonY });
-            
-            setSelectedText(text);
-            setMenuPosition({ x: buttonX, y: buttonY });
-            setShowMenu(true);
-          } catch (error) {
-            console.error('Error getting selection range:', error);
-            setShowMenu(false);
-            setSelectedText('');
-          }
-        } else {
-          console.log('Text too short, hiding menu');
-          setShowMenu(false);
-          setSelectedText('');
-        }
-      }, 200);
+      } else {
+        console.log('Text too short or empty, hiding menu. Length:', text.length);
+        setShowMenu(false);
+        setSelectedText('');
+      }
     };
 
     const handleClickOutside = (e: MouseEvent) => {
