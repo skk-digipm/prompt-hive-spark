@@ -11,99 +11,77 @@ export const TextSelectionHandler = () => {
   const { savePrompt, loadPrompts } = usePrompts();
   const { toast } = useToast();
 
-  console.log('TextSelectionHandler rendering, showMenu:', showMenu, 'selectedText:', selectedText);
-
   useEffect(() => {
-    console.log('TextSelectionHandler mounted');
-    
-    const handleTextSelection = (e: MouseEvent) => {
-      console.log('Mouse up event triggered');
-      
-      // Capture selection immediately - no delay
+    const clearSelection = () => {
+      setShowMenu(false);
+      setSelectedText('');
+    };
+
+    const handleSelectionChange = () => {
       const selection = window.getSelection();
-      console.log('Selection object:', selection);
+      const text = selection?.toString().trim() || '';
       
-      if (!selection) {
-        console.log('No selection object found');
-        setShowMenu(false);
-        setSelectedText('');
+      // Immediately hide if no selection
+      if (!text || text.length <= 10) {
+        clearSelection();
         return;
       }
+    };
 
-      // Multiple ways to get selected text
-      let text = '';
-      try {
-        // Method 1: Direct toString
-        text = selection.toString().trim();
-        console.log('Method 1 - toString():', `"${text}"`, 'Length:', text.length);
+    const handleTextSelection = () => {
+      // Small delay to ensure selection is complete
+      setTimeout(() => {
+        const selection = window.getSelection();
         
-        // Method 2: Range-based (fallback)
-        if (!text && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          text = range.toString().trim();
-          console.log('Method 2 - range.toString():', `"${text}"`, 'Length:', text.length);
+        if (!selection || selection.rangeCount === 0) {
+          clearSelection();
+          return;
         }
-        
-        // Method 3: Text content (fallback)
-        if (!text && selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const contents = range.cloneContents();
-          text = contents.textContent?.trim() || '';
-          console.log('Method 3 - textContent:', `"${text}"`, 'Length:', text.length);
-        }
-      } catch (error) {
-        console.error('Error getting selected text:', error);
-      }
 
-      if (text && text.length > 10) {
+        const text = selection.toString().trim();
+        
+        if (!text || text.length <= 10) {
+          clearSelection();
+          return;
+        }
+
         try {
           const range = selection.getRangeAt(0);
           const rect = range.getBoundingClientRect();
           
-          // Calculate better position
+          // Position button relative to viewport, not document
           const buttonX = Math.min(rect.right + 10, window.innerWidth - 200);
-          const buttonY = Math.max(rect.top + window.scrollY - 10, 10);
-          
-          console.log('Showing menu at position:', { x: buttonX, y: buttonY });
-          console.log('Final selected text:', `"${text}"`);
+          const buttonY = Math.max(rect.bottom + 5, 10);
           
           setSelectedText(text);
           setMenuPosition({ x: buttonX, y: buttonY });
           setShowMenu(true);
         } catch (error) {
-          console.error('Error getting selection range:', error);
-          setShowMenu(false);
-          setSelectedText('');
+          console.error('Error positioning button:', error);
+          clearSelection();
         }
-      } else {
-        console.log('Text too short or empty, hiding menu. Length:', text.length);
-        setShowMenu(false);
-        setSelectedText('');
-      }
+      }, 10);
     };
 
     const handleClickOutside = (e: MouseEvent) => {
-      // Check if click is outside the floating button
       const target = e.target as Element;
       if (!target.closest('.floating-save-button')) {
+        // Check if there's still a valid selection
         const selection = window.getSelection();
         if (!selection?.toString().trim()) {
-          console.log('Clearing selection due to outside click');
-          setShowMenu(false);
-          setSelectedText('');
+          clearSelection();
         }
       }
     };
 
-    // Only use mouseup event for better reliability
+    // Use both mouseup and selectionchange for comprehensive coverage
     document.addEventListener('mouseup', handleTextSelection);
+    document.addEventListener('selectionchange', handleSelectionChange);
     document.addEventListener('click', handleClickOutside);
-    
-    console.log('Event listeners added');
 
     return () => {
-      console.log('TextSelectionHandler unmounting');
       document.removeEventListener('mouseup', handleTextSelection);
+      document.removeEventListener('selectionchange', handleSelectionChange);
       document.removeEventListener('click', handleClickOutside);
     };
   }, []);
