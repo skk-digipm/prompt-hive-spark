@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { usePrompts } from '@/hooks/usePrompts';
+import { supabase } from '@/integrations/supabase/client';
 
 export const TextSelectionHandler = () => {
   const [selectedText, setSelectedText] = useState('');
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [showMenu, setShowMenu] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { savePrompt, loadPrompts } = usePrompts();
   const { toast } = useToast();
 
@@ -88,35 +90,58 @@ export const TextSelectionHandler = () => {
 
   const handleSavePrompt = async () => {
     console.log('Save prompt clicked');
+    setIsAnalyzing(true);
     
     const url = window.location.href;
     const domain = window.location.hostname;
     
-    const title = selectedText.length > 50 
-      ? selectedText.substring(0, 50) + '...'
-      : selectedText;
-
-    let category = 'General';
-    if (domain.includes('chatgpt') || domain.includes('openai')) {
-      category = 'ChatGPT';
-    } else if (domain.includes('claude') || domain.includes('anthropic')) {
-      category = 'Claude';
-    }
-
-    const promptData = {
-      title,
-      content: selectedText,
-      category,
-      tags: [domain.split('.')[0]],
-      metadata: {
-        sourceUrl: url,
-        sourceDomain: domain,
-        capturedAt: new Date(),
-        selectionContext: document.title
-      }
-    };
-
     try {
+      // Use AI to analyze the prompt and generate metadata
+      const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-prompt', {
+        body: {
+          content: selectedText,
+          sourceUrl: url,
+          sourceDomain: domain
+        }
+      });
+
+      let title, category, tags;
+
+      if (analysisError || !analysisData) {
+        console.warn('AI analysis failed, using fallback:', analysisError);
+        // Fallback to manual logic
+        title = selectedText.length > 50 
+          ? selectedText.substring(0, 50) + '...'
+          : selectedText;
+        
+        category = 'General';
+        if (domain.includes('chatgpt') || domain.includes('openai')) {
+          category = 'ChatGPT';
+        } else if (domain.includes('claude') || domain.includes('anthropic')) {
+          category = 'Claude';
+        }
+        
+        tags = [domain.split('.')[0]];
+      } else {
+        // Use AI-generated metadata
+        title = analysisData.title;
+        category = analysisData.category;
+        tags = analysisData.tags;
+      }
+
+      const promptData = {
+        title,
+        content: selectedText,
+        category,
+        tags,
+        metadata: {
+          sourceUrl: url,
+          sourceDomain: domain,
+          capturedAt: new Date(),
+          selectionContext: document.title
+        }
+      };
+
       await savePrompt(promptData);
       await loadPrompts(); // Refresh the prompt list
       
@@ -131,10 +156,11 @@ export const TextSelectionHandler = () => {
         description: "Failed to save prompt. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsAnalyzing(false);
+      setShowMenu(false);
+      setSelectedText('');
     }
-
-    setShowMenu(false);
-    setSelectedText('');
   };
 
   return (
@@ -151,11 +177,16 @@ export const TextSelectionHandler = () => {
         >
           <Button
             onClick={handleSavePrompt}
+            disabled={isAnalyzing}
             className="bg-gradient-primary hover:opacity-90 text-sm shadow-2xl border border-primary/20 animate-in fade-in-0 zoom-in-95 backdrop-blur-sm floating-save-button"
             size="sm"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
-            Save to PromptHive
+            {isAnalyzing ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Sparkles className="w-4 h-4 mr-2" />
+            )}
+            {isAnalyzing ? 'Analyzing...' : 'Save to PromptHive'}
           </Button>
         </div>
       )}
