@@ -41,8 +41,8 @@ const Index = () => {
       // Create new prompt
       await savePrompt(promptData);
       
-      // Check if user is guest and this is their first prompt
-      if ((!user || isGuest) && guestPromptCount === 1) {
+      // Check if user is guest and this is their first prompt (guestPromptCount was 0 before saving)
+      if ((!user || isGuest) && guestPromptCount === 0) {
         setTimeout(() => {
           setShowGuestPrompt(true);
         }, 1000);
@@ -165,10 +165,10 @@ const Index = () => {
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem 
-                        onClick={async () => {
-                          await signOut();
-                          navigate('/');
-                        }}
+                      onClick={async () => {
+                        await signOut();
+                        window.location.reload(); // Force page reload to clear guest data
+                      }}
                         className="cursor-pointer text-destructive"
                       >
                         <LogOut className="w-4 h-4 mr-2" />

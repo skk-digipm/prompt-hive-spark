@@ -11,7 +11,7 @@ interface GuestBannerProps {
 export const GuestBanner = ({ onSignupClick, promptCount }: GuestBannerProps) => {
   const [isDismissed, setIsDismissed] = useState(false);
 
-  if (isDismissed || promptCount === 0) return null;
+  if (isDismissed) return null;
 
   return (
     <Alert className="mb-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
@@ -20,7 +20,10 @@ export const GuestBanner = ({ onSignupClick, promptCount }: GuestBannerProps) =>
         <div className="flex-1">
           <span className="font-medium">You're in Guest Mode</span>
           <span className="text-muted-foreground ml-2">
-            Sign up to save your {promptCount} prompt{promptCount > 1 ? 's' : ''} permanently and access them anywhere!
+            {promptCount > 0 
+              ? `Sign up to save your ${promptCount} prompt${promptCount > 1 ? 's' : ''} permanently and access them anywhere!`
+              : 'Sign up to save your prompts permanently and access them anywhere!'
+            }
           </span>
         </div>
         <div className="flex items-center gap-2 ml-4">
