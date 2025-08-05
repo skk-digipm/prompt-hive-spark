@@ -126,9 +126,9 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
                         href={prompt.metadata.sourceUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center text-primary hover:text-primary/80 transition-colors"
+                        className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                       >
-                        <ExternalLink className="w-3 h-3" />
+                        <ExternalLink className="w-4 h-4" />
                       </a>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -239,12 +239,9 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
               {prompt.tags.length > 3 && (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Badge 
-                      variant="outline" 
-                      className="text-xs text-muted-foreground cursor-pointer hover:bg-accent transition-colors"
-                    >
+                    <button className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 text-foreground cursor-pointer hover:bg-accent">
                       +{prompt.tags.length - 3} more
-                    </Badge>
+                    </button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-3" align="start">
                     <div className="space-y-2">
