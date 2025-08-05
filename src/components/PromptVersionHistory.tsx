@@ -83,6 +83,17 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
     }).format(date);
   };
 
+  const getVersionDates = (version: Prompt) => {
+    const originalCreated = version.metadata?.originalCreatedAt 
+      ? new Date(version.metadata.originalCreatedAt) 
+      : version.createdAt;
+    const lastEdited = version.metadata?.editedAt 
+      ? new Date(version.metadata.editedAt) 
+      : version.updatedAt;
+    
+    return { originalCreated, lastEdited };
+  };
+
   const truncateContent = (content: string, limit: number = 100) => {
     if (content.length <= limit) return content;
     return content.slice(0, limit) + '...';
@@ -112,9 +123,15 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
                       <Badge variant="outline">
                         v{version.versionNumber}
                       </Badge>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="w-3 h-3" />
-                        {formatDate(version.updatedAt)}
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          Created: {formatDate(getVersionDates(version).originalCreated)}
+                        </div>
+                        <div>Last edited: {formatDate(getVersionDates(version).lastEdited)}</div>
+                        {version.metadata?.editCount && (
+                          <div className="text-blue-600">Edited {version.metadata.editCount} times</div>
+                        )}
                       </div>
                     </div>
                     <Button

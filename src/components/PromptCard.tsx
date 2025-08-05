@@ -78,21 +78,28 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
             <h3 className="font-semibold text-lg text-card-foreground truncate group-hover:text-primary transition-colors">
               {prompt.title}
             </h3>
-            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {formatDate(prompt.createdAt)}
+            <div className="flex flex-col gap-1 mt-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  Created {formatDate(prompt.createdAt)}
+                </div>
+                <div className="flex items-center gap-1">
+                  <BarChart3 className="w-3 h-3" />
+                  {prompt.usageCount} uses
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
+                    v{prompt.versionNumber || 1}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-1">
-                <BarChart3 className="w-3 h-3" />
-                {prompt.usageCount} uses
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
-                  v{prompt.versionNumber || 1}
-                </span>
-              </div>
-              {renderStars(prompt.rating)}
+              {prompt.metadata?.lastEditedAt && (
+                <div className="text-xs text-blue-600">
+                  Last edited: {formatDate(new Date(prompt.metadata.lastEditedAt))}
+                  {prompt.metadata?.editCount && ` (${prompt.metadata.editCount} edits)`}
+                </div>
+              )}
             </div>
             {prompt.metadata?.sourceUrl && (
               <div className="mt-1">
@@ -103,35 +110,38 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
             )}
           </div>
           
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowVersionHistory(true)}
-              className="h-8 w-8 p-0 hover:bg-accent"
-            >
-              <History className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(prompt)}
-              className="h-8 w-8 p-0 hover:bg-accent"
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onDelete(prompt.id)}
-              className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            {renderStars(prompt.rating)}
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowVersionHistory(true)}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <History className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onEdit(prompt)}
+                className="h-8 w-8 p-0 hover:bg-accent"
+              >
+                <Edit className="w-4 h-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onDelete(prompt.id)}
+                className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap mt-3">
           {prompt.category && (
             <Badge variant="secondary" className="w-fit">
               {prompt.category}

@@ -151,7 +151,11 @@ export const usePrompts = () => {
         versionNumber: data.version_number || 1,
         parentPromptId: data.parent_prompt_id,
         isCurrentVersion: data.is_current_version !== false,
-        metadata: data.metadata as any
+        metadata: {
+          ...(data.metadata as Record<string, any> || {}),
+          originalCreatedAt: data.created_at,
+          editedAt: data.edited_at || data.updated_at
+        } as any
       };
       
       setPrompts(prev => [newPrompt, ...prev]);
@@ -176,7 +180,7 @@ export const usePrompts = () => {
 
       if (fetchError) throw fetchError;
 
-      // Create a new version with the old content
+      // Create a new version with the old content (preserving original created_at)
       const { error: versionError } = await supabase
         .from('prompts')
         .insert({
@@ -190,7 +194,14 @@ export const usePrompts = () => {
           parent_prompt_id: id,
           version_number: (currentPrompt.version_number || 1),
           is_current_version: false,
-          metadata: currentPrompt.metadata,
+          created_at: currentPrompt.created_at, // Preserve original creation time
+          edited_at: currentPrompt.updated_at, // When this version was last edited
+          metadata: {
+            ...(currentPrompt.metadata as Record<string, any> || {}),
+            originalCreatedAt: currentPrompt.created_at,
+            versionCreatedAt: new Date().toISOString(),
+            editHistory: 'Archived before edit'
+          },
           source_url: currentPrompt.source_url,
           ai_model: currentPrompt.ai_model,
           is_long_prompt: currentPrompt.is_long_prompt
@@ -198,7 +209,7 @@ export const usePrompts = () => {
 
       if (versionError) throw versionError;
 
-      // Update the current prompt
+      // Update the current prompt with new edited_at timestamp
       const { data, error } = await supabase
         .from('prompts')
         .update({
@@ -210,8 +221,14 @@ export const usePrompts = () => {
           source_url: updates.sourceUrl,
           ai_model: updates.aiModel,
           rating: updates.rating,
-          metadata: updates.metadata as any,
-          version_number: (currentPrompt.version_number || 1) + 1
+          metadata: {
+            ...(updates.metadata as Record<string, any> || {}),
+            originalCreatedAt: currentPrompt.created_at,
+            lastEditedAt: new Date().toISOString(),
+            editCount: ((currentPrompt.metadata as any)?.editCount || 0) + 1
+          } as any,
+          version_number: (currentPrompt.version_number || 1) + 1,
+          edited_at: new Date().toISOString()
         })
         .eq('id', id)
         .select()

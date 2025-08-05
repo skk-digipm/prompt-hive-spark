@@ -20,6 +20,12 @@ export interface Prompt {
     sourceDomain?: string;
     capturedAt?: Date;
     selectionContext?: string;
+    originalCreatedAt?: string;
+    editedAt?: string;
+    lastEditedAt?: string;
+    editCount?: number;
+    versionCreatedAt?: string;
+    editHistory?: string;
   };
 }
 
