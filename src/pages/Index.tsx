@@ -22,7 +22,7 @@ import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
 
 const Index = () => {
-  const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags, allCategories } = usePrompts();
+  const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags } = usePrompts();
   const { user, signOut, signInAnonymously } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
@@ -206,7 +206,6 @@ const Index = () => {
             filter={filter}
             onFilterChange={setFilter}
             allTags={allTags}
-            allCategories={allCategories}
           />
         </div>
 
@@ -286,7 +285,7 @@ const Index = () => {
         onClose={handleFormClose}
         onSave={handleSavePrompt}
         editPrompt={editingPrompt}
-        categories={allCategories}
+        categories={[]}
       />
 
       <AuthDialog 

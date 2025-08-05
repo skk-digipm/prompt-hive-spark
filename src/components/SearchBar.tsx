@@ -12,10 +12,9 @@ interface SearchBarProps {
   filter: PromptFilter;
   onFilterChange: (filter: PromptFilter) => void;
   allTags: string[];
-  allCategories: string[];
 }
 
-export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: SearchBarProps) => {
+export const SearchBar = ({ filter, onFilterChange, allTags }: SearchBarProps) => {
   const [searchInput, setSearchInput] = useState(filter.search || '');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -35,19 +34,12 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
     });
   };
 
-  const handleCategoryChange = (category: string) => {
-    onFilterChange({ 
-      ...filter, 
-      category: category === 'all' ? undefined : category 
-    });
-  };
-
   const clearFilters = () => {
     setSearchInput('');
     onFilterChange({});
   };
 
-  const hasActiveFilters = filter.search || filter.tags?.length || filter.category;
+  const hasActiveFilters = filter.search || filter.tags?.length;
 
   return (
     <div className="space-y-4">
@@ -63,20 +55,6 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
           />
         </form>
 
-        {/* Category Filter */}
-        <Select value={filter.category || 'all'} onValueChange={handleCategoryChange}>
-          <SelectTrigger className="w-48 border-border/50">
-            <SelectValue placeholder="All Categories" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {allCategories.map((category) => (
-              <SelectItem key={category} value={category}>
-                {category}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
 
         {/* Tag Filter */}
         <Popover>
@@ -120,7 +98,6 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
           filter={filter}
           onFilterChange={onFilterChange}
           allTags={allTags}
-          allCategories={allCategories}
         />
 
         {/* Clear Filters */}
@@ -156,15 +133,6 @@ export const SearchBar = ({ filter, onFilterChange, allTags, allCategories }: Se
             </Badge>
           )}
           
-          {filter.category && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              Category: {filter.category}
-              <X
-                className="w-3 h-3 cursor-pointer hover:text-destructive"
-                onClick={() => onFilterChange({ ...filter, category: undefined })}
-              />
-            </Badge>
-          )}
           
           {filter.tags?.map((tag) => (
             <Badge key={tag} variant="secondary" className="flex items-center gap-1">

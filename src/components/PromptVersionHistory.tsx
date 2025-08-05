@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader } from './ui/card';
@@ -75,8 +75,8 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
+      day: '2-digit',
       month: 'short',
-      day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -123,15 +123,11 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
                       <Badge variant="outline">
                         v{version.versionNumber}
                       </Badge>
-                      <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="text-xs text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          Created: {formatDate(getVersionDates(version).originalCreated)}
+                          {formatDate(getVersionDates(version).lastEdited)}
                         </div>
-                        <div>Last edited: {formatDate(getVersionDates(version).lastEdited)}</div>
-                        {version.metadata?.editCount && (
-                          <div className="text-blue-600">Edited {version.metadata.editCount} times</div>
-                        )}
                       </div>
                     </div>
                     <Button
@@ -151,9 +147,11 @@ export const PromptVersionHistory = ({ isOpen, onClose, prompt, onUseVersion }: 
                     </div>
                     {version.content.length > 100 && (
                       <Dialog>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-primary">
-                          View full content
-                        </Button>
+                        <DialogTrigger asChild>
+                          <Button variant="link" size="sm" className="p-0 h-auto text-primary">
+                            View full content
+                          </Button>
+                        </DialogTrigger>
                         <DialogContent className="max-w-2xl max-h-[80vh]">
                           <DialogHeader>
                             <DialogTitle>Version {version.versionNumber} - {version.title}</DialogTitle>

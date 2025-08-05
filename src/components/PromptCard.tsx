@@ -78,10 +78,13 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
             <h3 className="font-semibold text-lg text-card-foreground truncate group-hover:text-primary transition-colors">
               {prompt.title}
             </h3>
-            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground" 
+                 title={prompt.metadata?.lastEditedAt 
+                   ? `Last edited: ${formatDate(new Date(prompt.metadata.lastEditedAt))}${prompt.metadata?.editCount ? ` (${prompt.metadata.editCount} edits)` : ''}`
+                   : undefined}>
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                Created {formatDate(prompt.createdAt)}
+                {formatDate(prompt.createdAt)}
               </div>
               <div className="flex items-center gap-1">
                 <BarChart3 className="w-3 h-3" />
@@ -92,12 +95,6 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
                   v{prompt.versionNumber || 1}
                 </span>
               </div>
-              {prompt.metadata?.lastEditedAt && (
-                <div className="text-xs text-blue-600">
-                  Last edited: {formatDate(new Date(prompt.metadata.lastEditedAt))}
-                  {prompt.metadata?.editCount && ` (${prompt.metadata.editCount} edits)`}
-                </div>
-              )}
             </div>
             {prompt.metadata?.sourceUrl && (
               <div className="mt-2">
@@ -147,11 +144,6 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
         </div>
 
         <div className="flex gap-2 flex-wrap mt-3">
-          {prompt.category && (
-            <Badge variant="secondary" className="w-fit">
-              {prompt.category}
-            </Badge>
-          )}
           {prompt.tone && (
             <Badge variant="outline" className="w-fit">
               {prompt.tone}
@@ -230,20 +222,20 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
         <div className="flex gap-2 w-full">
           <Button
             onClick={() => copyToClipboard(prompt.content)}
-            className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity"
+            className="flex-1 bg-gradient-primary hover:opacity-90 transition-opacity min-w-0"
             size="sm"
           >
-            <Copy className="w-4 h-4 mr-2" />
-            Copy & Use
+            <Copy className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">Copy & Use</span>
           </Button>
           <Button
             onClick={() => setShowRewriter(true)}
             variant="outline"
             size="sm"
-            className="flex-1"
+            className="flex-1 min-w-0"
           >
-            <Wand2 className="w-4 h-4 mr-2" />
-            Enhance with AI
+            <Wand2 className="w-4 h-4 mr-2 flex-shrink-0" />
+            <span className="truncate">Enhance with AI</span>
           </Button>
         </div>
       </CardFooter>

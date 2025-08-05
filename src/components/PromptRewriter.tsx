@@ -113,11 +113,6 @@ export const PromptRewriter = ({ isOpen, onClose, prompt, onUsePrompt }: PromptR
                       {prompt.tone}
                     </Badge>
                   )}
-                  {prompt.category && (
-                    <Badge variant="secondary" className="text-xs">
-                      {prompt.category}
-                    </Badge>
-                  )}
                 </div>
               </div>
               <div className="relative">

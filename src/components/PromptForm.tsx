@@ -37,7 +37,7 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
       setContent(editPrompt.content || '');
       setCategory(editPrompt.category || '');
       setTags(editPrompt.tags || []);
-      setSourceUrl(editPrompt.sourceUrl || '');
+      setSourceUrl(editPrompt.sourceUrl || editPrompt.metadata?.sourceUrl || '');
       setRating(editPrompt.rating || undefined);
     } else {
       resetForm();

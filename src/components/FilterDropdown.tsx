@@ -13,10 +13,9 @@ interface FilterDropdownProps {
   filter: PromptFilter;
   onFilterChange: (filter: PromptFilter) => void;
   allTags: string[];
-  allCategories: string[];
 }
 
-export const FilterDropdown = ({ filter, onFilterChange, allTags, allCategories }: FilterDropdownProps) => {
+export const FilterDropdown = ({ filter, onFilterChange, allTags }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const handleTagToggle = (tag: string) => {
@@ -31,12 +30,6 @@ export const FilterDropdown = ({ filter, onFilterChange, allTags, allCategories 
     });
   };
 
-  const handleCategoryChange = (category: string) => {
-    onFilterChange({ 
-      ...filter, 
-      category: category === 'all' ? undefined : category 
-    });
-  };
 
   const handleSortChange = (sort: string) => {
     onFilterChange({ 
@@ -87,8 +80,8 @@ export const FilterDropdown = ({ filter, onFilterChange, allTags, allCategories 
     setIsOpen(false);
   };
 
-  const hasActiveFilters = filter.tags?.length || filter.category || filter.sortBy || filter.dateRange;
-  const filterCount = (filter.tags?.length || 0) + (filter.category ? 1 : 0) + (filter.sortBy ? 1 : 0) + (filter.dateRange ? 1 : 0);
+  const hasActiveFilters = filter.tags?.length || filter.sortBy || filter.dateRange;
+  const filterCount = (filter.tags?.length || 0) + (filter.sortBy ? 1 : 0) + (filter.dateRange ? 1 : 0);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -119,26 +112,6 @@ export const FilterDropdown = ({ filter, onFilterChange, allTags, allCategories 
             )}
           </div>
 
-          {/* Category Filter */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Tag className="w-3 h-3" />
-              Category
-            </label>
-            <Select value={filter.category || 'all'} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="h-8">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {allCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
           {/* Sort Filter */}
           <div className="space-y-2">

@@ -92,9 +92,6 @@ export const usePrompts = () => {
       }
     }
     
-    if (filter.category && prompt.category !== filter.category) {
-      return false;
-    }
     
     return true;
   });
@@ -296,9 +293,6 @@ export const usePrompts = () => {
     }
   };
 
-  // Get all unique categories
-  const allCategories = [...new Set(prompts.map(p => p.category).filter(Boolean))];
-
   return {
     prompts: filteredPrompts,
     allPrompts: prompts,
@@ -310,7 +304,6 @@ export const usePrompts = () => {
     deletePrompt,
     incrementUsage,
     allTags,
-    allCategories,
     loadPrompts
   };
 };
