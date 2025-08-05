@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, Download, FileText, User, Plus, Sparkles, Settings, LogOut, BarChart3 } from 'lucide-react';
+import { Search, Filter, Download, FileText, User, Plus, Sparkles, Settings, LogOut, BarChart3, UserPlus } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
@@ -11,6 +11,7 @@ import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
 import { FilterDropdown } from '@/components/FilterDropdown';
 import { StatsCard } from '@/components/StatsCard';
+import { GuestBanner } from '@/components/GuestBanner';
 
 import { AuthDialog } from '@/components/AuthDialog';
 import { UserProfile } from '@/components/UserProfile';
@@ -22,8 +23,8 @@ import { exportToCSV, exportToJSON } from '@/utils/export';
 import { Prompt } from '@/types/prompt';
 
 const Index = () => {
-  const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags } = usePrompts();
-  const { user, signOut, signInAnonymously } = useAuth();
+  const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags, guestPromptCount } = usePrompts();
+  const { user, isGuest, signOut, signInAnonymously } = useAuth();
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
@@ -31,7 +32,6 @@ const Index = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [showGuestPrompt, setShowGuestPrompt] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const [guestPromptCount, setGuestPromptCount] = useState(0);
 
   const handleSavePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
     if (editingPrompt) {
@@ -42,8 +42,7 @@ const Index = () => {
       await savePrompt(promptData);
       
       // Check if user is guest and this is their first prompt
-      if (!user && guestPromptCount === 0) {
-        setGuestPromptCount(1);
+      if ((!user || isGuest) && guestPromptCount === 1) {
         setTimeout(() => {
           setShowGuestPrompt(true);
         }, 1000);
@@ -144,17 +143,27 @@ const Index = () => {
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm">
                         <User className="w-4 h-4 mr-2" />
-                        {user.user_metadata?.display_name || user.email?.split('@')[0] || 'User'}
+                        {isGuest ? 'Guest' : (user.user_metadata?.display_name || user.email?.split('@')[0] || 'User')}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48 bg-background border border-border shadow-elevated z-50">
-                      <DropdownMenuItem 
-                        onClick={() => setShowProfile(true)}
-                        className="cursor-pointer"
-                      >
-                        <Settings className="w-4 h-4 mr-2" />
-                        Profile
-                      </DropdownMenuItem>
+                      {isGuest ? (
+                        <DropdownMenuItem 
+                          onClick={() => setShowLoginPopup(true)}
+                          className="cursor-pointer"
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Sign Up / Login
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem 
+                          onClick={() => setShowProfile(true)}
+                          className="cursor-pointer"
+                        >
+                          <Settings className="w-4 h-4 mr-2" />
+                          Profile
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem 
                         onClick={async () => {
                           await signOut();
@@ -200,6 +209,14 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Guest Banner */}
+        {(!user || isGuest) && (
+          <GuestBanner 
+            onSignupClick={() => setShowLoginPopup(true)}
+            promptCount={guestPromptCount}
+          />
+        )}
+
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
           <SearchBar
@@ -238,14 +255,30 @@ const Index = () => {
                     <Sparkles className="w-8 h-8 text-primary-foreground" />
                   </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">No prompts yet</h3>
-                  <p className="text-muted-foreground mb-4">Get started by adding your first AI prompt!</p>
-                  <Button
-                    onClick={() => setShowForm(true)}
-                    className="bg-gradient-primary hover:opacity-90"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Prompt
-                  </Button>
+                  <p className="text-muted-foreground mb-4">
+                    {!user || isGuest ? 
+                      "Get started by adding your first AI prompt! Your prompts will be saved locally." :
+                      "Get started by adding your first AI prompt!"
+                    }
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      onClick={() => setShowForm(true)}
+                      className="bg-gradient-primary hover:opacity-90"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Prompt
+                    </Button>
+                    {(!user || isGuest) && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowLoginPopup(true)}
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Sign Up to Save Permanently
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

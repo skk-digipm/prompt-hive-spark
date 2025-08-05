@@ -5,10 +5,109 @@ import { useAuth } from './useAuth';
 
 export const usePrompts = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
+  const [guestPrompts, setGuestPrompts] = useState<Prompt[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<PromptFilter>({});
   const [allTags, setAllTags] = useState<string[]>([]);
-  const { user } = useAuth();
+  const { user, isGuest, getGuestSessionId } = useAuth();
+
+  // Load guest prompts from localStorage
+  const loadGuestPrompts = () => {
+    if (!user && !isGuest) {
+      const stored = localStorage.getItem('guest_prompts');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          const guestSessionId = getGuestSessionId();
+          // Filter prompts for current guest session
+          const sessionPrompts = parsed.filter((p: any) => p.guestSessionId === guestSessionId);
+          setGuestPrompts(sessionPrompts.map((p: any) => ({
+            ...p,
+            createdAt: new Date(p.createdAt),
+            updatedAt: new Date(p.updatedAt)
+          })));
+        } catch (error) {
+          console.error('Failed to load guest prompts:', error);
+          setGuestPrompts([]);
+        }
+      }
+    }
+  };
+
+  // Save guest prompts to localStorage
+  const saveGuestPrompts = (prompts: Prompt[]) => {
+    const existing = localStorage.getItem('guest_prompts');
+    let allGuestPrompts = [];
+    
+    try {
+      allGuestPrompts = existing ? JSON.parse(existing) : [];
+    } catch (error) {
+      allGuestPrompts = [];
+    }
+
+    const guestSessionId = getGuestSessionId();
+    // Remove existing prompts for this session
+    allGuestPrompts = allGuestPrompts.filter((p: any) => p.guestSessionId !== guestSessionId);
+    
+    // Add current session prompts
+    const sessionPrompts = prompts.map(p => ({
+      ...p,
+      guestSessionId,
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString()
+    }));
+    
+    allGuestPrompts.push(...sessionPrompts);
+    localStorage.setItem('guest_prompts', JSON.stringify(allGuestPrompts));
+  };
+
+  // Migrate guest prompts to user account
+  const migrateGuestPrompts = async () => {
+    if (!user || isGuest || guestPrompts.length === 0) return;
+
+    try {
+      setLoading(true);
+      
+      for (const guestPrompt of guestPrompts) {
+        await supabase
+          .from('prompts')
+          .insert({
+            user_id: user.id,
+            title: guestPrompt.title,
+            content: guestPrompt.content,
+            tags: guestPrompt.tags,
+            category: guestPrompt.category,
+            tone: guestPrompt.tone,
+            source_url: guestPrompt.sourceUrl,
+            ai_model: guestPrompt.aiModel,
+            rating: guestPrompt.rating,
+            is_long_prompt: guestPrompt.content.length > 2000,
+            metadata: guestPrompt.metadata as any
+          });
+      }
+
+      // Clear guest prompts after migration
+      setGuestPrompts([]);
+      const guestSessionId = getGuestSessionId();
+      const existing = localStorage.getItem('guest_prompts');
+      if (existing) {
+        try {
+          const allGuestPrompts = JSON.parse(existing);
+          const filtered = allGuestPrompts.filter((p: any) => p.guestSessionId !== guestSessionId);
+          localStorage.setItem('guest_prompts', JSON.stringify(filtered));
+        } catch (error) {
+          console.error('Failed to clean guest prompts:', error);
+        }
+      }
+
+      // Reload prompts from database
+      await loadPrompts();
+    } catch (error) {
+      console.error('Failed to migrate guest prompts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load prompts from Supabase
   const loadPrompts = async () => {
@@ -65,17 +164,28 @@ export const usePrompts = () => {
   };
 
   useEffect(() => {
-    loadPrompts();
-    loadTags();
-  }, []);
+    if (user && !isGuest) {
+      loadPrompts();
+      loadTags();
+    } else {
+      loadGuestPrompts();
+    }
+  }, [user, isGuest]);
+
+  // Migrate guest prompts when user logs in
+  useEffect(() => {
+    if (user && !isGuest && guestPrompts.length > 0) {
+      migrateGuestPrompts();
+    }
+  }, [user, isGuest, guestPrompts.length]);
+
+  // Get current prompts (database or guest)
+  const currentPrompts = user && !isGuest ? prompts : guestPrompts;
 
   // Filter prompts based on current filter
-  const filteredPrompts = prompts.filter(prompt => {
-    // Only show current versions in the main list
-    if (!prompt.isCurrentVersion) return false;
-    
-    // If user is signed out, don't show any prompts
-    if (!user) return false;
+  const filteredPrompts = currentPrompts.filter(prompt => {
+    // Only show current versions in the main list (for database prompts)
+    if (prompt.isCurrentVersion !== undefined && !prompt.isCurrentVersion) return false;
 
     if (filter.search) {
       const searchLower = filter.search.toLowerCase();
@@ -92,11 +202,38 @@ export const usePrompts = () => {
       }
     }
     
-    
     return true;
   });
 
   const savePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
+    // Handle guest prompts
+    if (!user || isGuest) {
+      const newPrompt: Prompt = {
+        id: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        title: promptData.title,
+        content: promptData.content,
+        tags: promptData.tags || [],
+        category: promptData.category,
+        tone: promptData.tone,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        usageCount: 0,
+        rating: promptData.rating,
+        sourceUrl: promptData.sourceUrl,
+        aiModel: promptData.aiModel,
+        isLongPrompt: promptData.content.length > 2000,
+        versionNumber: 1,
+        isCurrentVersion: true,
+        metadata: promptData.metadata
+      };
+      
+      const updatedGuestPrompts = [newPrompt, ...guestPrompts];
+      setGuestPrompts(updatedGuestPrompts);
+      saveGuestPrompts(updatedGuestPrompts);
+      return newPrompt;
+    }
+
+    // Handle authenticated user prompts
     setLoading(true);
     try {
       // Add URL tag automatically if metadata contains sourceUrl
@@ -108,7 +245,7 @@ export const usePrompts = () => {
       const { data, error } = await supabase
         .from('prompts')
         .insert({
-          user_id: user?.id || null,
+          user_id: user.id,
           title: promptData.title,
           content: promptData.content,
           tags: tagsWithUrl,
@@ -166,6 +303,19 @@ export const usePrompts = () => {
   };
 
   const updatePrompt = async (id: string, updates: Partial<Prompt>) => {
+    // Handle guest prompts
+    if (!user || isGuest || id.startsWith('guest_')) {
+      const updatedGuestPrompts = guestPrompts.map(prompt => 
+        prompt.id === id 
+          ? { ...prompt, ...updates, updatedAt: new Date() }
+          : prompt
+      );
+      setGuestPrompts(updatedGuestPrompts);
+      saveGuestPrompts(updatedGuestPrompts);
+      return;
+    }
+
+    // Handle authenticated user prompts
     setLoading(true);
     try {
       // First, get the current prompt to create a version
@@ -258,6 +408,15 @@ export const usePrompts = () => {
   };
 
   const deletePrompt = async (id: string) => {
+    // Handle guest prompts
+    if (!user || isGuest || id.startsWith('guest_')) {
+      const updatedGuestPrompts = guestPrompts.filter(prompt => prompt.id !== id);
+      setGuestPrompts(updatedGuestPrompts);
+      saveGuestPrompts(updatedGuestPrompts);
+      return;
+    }
+
+    // Handle authenticated user prompts
     setLoading(true);
     try {
       const { error } = await supabase
@@ -277,6 +436,19 @@ export const usePrompts = () => {
   };
 
   const incrementUsage = async (id: string) => {
+    // Handle guest prompts
+    if (!user || isGuest || id.startsWith('guest_')) {
+      const updatedGuestPrompts = guestPrompts.map(prompt => 
+        prompt.id === id 
+          ? { ...prompt, usageCount: prompt.usageCount + 1, updatedAt: new Date() }
+          : prompt
+      );
+      setGuestPrompts(updatedGuestPrompts);
+      saveGuestPrompts(updatedGuestPrompts);
+      return;
+    }
+
+    // Handle authenticated user prompts
     try {
       const { error } = await supabase
         .rpc('increment_usage_count', { prompt_id: id });
@@ -295,7 +467,7 @@ export const usePrompts = () => {
 
   return {
     prompts: filteredPrompts,
-    allPrompts: prompts,
+    allPrompts: user && !isGuest ? prompts : guestPrompts,
     loading,
     filter,
     setFilter,
@@ -304,6 +476,8 @@ export const usePrompts = () => {
     deletePrompt,
     incrementUsage,
     allTags,
-    loadPrompts
+    loadPrompts,
+    guestPromptCount: guestPrompts.length,
+    migrateGuestPrompts
   };
 };

@@ -55,14 +55,36 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    // Clear guest session data before signing out
+    localStorage.removeItem('guest_session_id');
+    localStorage.removeItem('guest_prompts');
+    
     const { error } = await supabase.auth.signOut();
     return { error };
+  };
+
+  // Helper to check if user is anonymous/guest
+  const isGuest = session?.user?.is_anonymous || false;
+  
+  // Helper to get or create guest session ID
+  const getGuestSessionId = () => {
+    if (!isGuest && !session) {
+      let guestId = localStorage.getItem('guest_session_id');
+      if (!guestId) {
+        guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('guest_session_id', guestId);
+      }
+      return guestId;
+    }
+    return null;
   };
 
   return {
     user,
     session,
     loading,
+    isGuest,
+    getGuestSessionId,
     signUp,
     signIn,
     signInAnonymously,
