@@ -71,7 +71,7 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
   };
 
   return (
-    <Card className="bg-gradient-card border-border/50 shadow-card hover:shadow-elevated transition-all duration-300 group">
+    <Card className="bg-gradient-card border-border/50 shadow-card hover:shadow-elevated transition-all duration-300 group flex flex-col h-full">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -152,7 +152,7 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
         </div>
       </CardHeader>
 
-      <CardContent className="py-0">
+      <CardContent className="py-0 flex-grow">
         <div className="space-y-3">
           <div className="text-sm text-card-foreground leading-relaxed">
             {truncateContent(prompt.content)}
