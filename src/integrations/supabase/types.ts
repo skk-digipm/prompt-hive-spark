@@ -47,6 +47,7 @@ export type Database = {
           category: string | null
           content: string
           created_at: string
+          edited_at: string | null
           id: string
           is_current_version: boolean | null
           is_long_prompt: boolean | null
@@ -67,6 +68,7 @@ export type Database = {
           category?: string | null
           content: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_current_version?: boolean | null
           is_long_prompt?: boolean | null
@@ -87,6 +89,7 @@ export type Database = {
           category?: string | null
           content?: string
           created_at?: string
+          edited_at?: string | null
           id?: string
           is_current_version?: boolean | null
           is_long_prompt?: boolean | null
