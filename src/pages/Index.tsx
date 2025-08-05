@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { usePrompts } from '@/hooks/usePrompts';
+import { useExtensionPrompts } from '@/hooks/useExtensionPrompts';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptForm } from '@/components/PromptForm';
 import { SearchBar } from '@/components/SearchBar';
@@ -26,6 +27,9 @@ const Index = () => {
   const { prompts, loading, filter, setFilter, savePrompt, updatePrompt, deletePrompt, incrementUsage, allTags, guestPromptCount } = usePrompts();
   const { user, isGuest, signOut, signInAnonymously } = useAuth();
   const navigate = useNavigate();
+  
+  // Extension-specific hook for handling prompts from content script
+  useExtensionPrompts();
   const [showForm, setShowForm] = useState(false);
   const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
