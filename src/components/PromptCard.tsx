@@ -78,21 +78,19 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
             <h3 className="font-semibold text-lg text-card-foreground truncate group-hover:text-primary transition-colors">
               {prompt.title}
             </h3>
-            <div className="flex flex-col gap-1 mt-1 text-sm text-muted-foreground">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  Created {formatDate(prompt.createdAt)}
-                </div>
-                <div className="flex items-center gap-1">
-                  <BarChart3 className="w-3 h-3" />
-                  {prompt.usageCount} uses
-                </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
-                    v{prompt.versionNumber || 1}
-                  </span>
-                </div>
+            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Created {formatDate(prompt.createdAt)}
+              </div>
+              <div className="flex items-center gap-1">
+                <BarChart3 className="w-3 h-3" />
+                {prompt.usageCount} uses
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
+                  v{prompt.versionNumber || 1}
+                </span>
               </div>
               {prompt.metadata?.lastEditedAt && (
                 <div className="text-xs text-blue-600">
@@ -102,10 +100,17 @@ export const PromptCard = ({ prompt, onEdit, onDelete, onUse, onUpdate }: Prompt
               )}
             </div>
             {prompt.metadata?.sourceUrl && (
-              <div className="mt-1">
-                <p className="text-xs text-muted-foreground">
-                  Source: {prompt.metadata.sourceDomain || new URL(prompt.metadata.sourceUrl).hostname}
-                </p>
+              <div className="mt-2">
+                <div className="text-xs text-muted-foreground mb-1">Source URL:</div>
+                <a 
+                  href={prompt.metadata.sourceUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:text-primary/80 transition-colors underline break-all"
+                  title={prompt.metadata.sourceUrl}
+                >
+                  {prompt.metadata.sourceDomain || new URL(prompt.metadata.sourceUrl).hostname}
+                </a>
               </div>
             )}
           </div>

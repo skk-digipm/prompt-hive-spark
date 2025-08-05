@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,12 +112,47 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
     }
   };
 
-  const enhanceWithAI = () => {
-    // Placeholder for AI enhancement
-    toast({
-      title: "AI Enhancement",
-      description: "AI prompt enhancement will be available soon!",
-    });
+  const [enhancing, setEnhancing] = useState(false);
+
+  const enhanceWithAI = async () => {
+    if (!content.trim()) {
+      toast({
+        title: "No content to enhance",
+        description: "Please enter some prompt content first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEnhancing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('enhance-prompt', {
+        body: { prompt: content }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.enhancedPrompt) {
+        setContent(data.enhancedPrompt);
+        toast({
+          title: "Prompt enhanced!",
+          description: "Your prompt has been improved with AI suggestions.",
+        });
+      } else {
+        throw new Error('No enhanced prompt received');
+      }
+    } catch (error) {
+      console.error('Enhancement error:', error);
+      toast({
+        title: "Enhancement failed",
+        description: "Could not enhance the prompt. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setEnhancing(false);
+    }
   };
 
   const wordCount = content.trim().split(/\s+/).filter(word => word.length > 0).length;
@@ -169,25 +205,6 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="category">Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="border-border/50">
-                <SelectValue placeholder="Select category..." />
-              </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="Content Creation">Content Creation</SelectItem>
-                  <SelectItem value="Development">Development</SelectItem>
-                  <SelectItem value="Business">Business</SelectItem>
-                  <SelectItem value="Analysis">Analysis</SelectItem>
-                </SelectContent>
-            </Select>
-          </div>
 
           <div className="space-y-2">
             <Label>Tags</Label>
@@ -232,10 +249,11 @@ export const PromptForm = ({ isOpen, onClose, onSave, editPrompt, categories }: 
               type="button"
               variant="outline"
               onClick={enhanceWithAI}
+              disabled={enhancing || !content.trim()}
               className="flex-1"
             >
               <Wand2 className="w-4 h-4 mr-2" />
-              Enhance with AI
+              {enhancing ? 'Enhancing...' : 'Enhance with AI'}
             </Button>
             <Button
               type="submit"

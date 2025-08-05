@@ -4,7 +4,7 @@ import { StatsCard } from '@/components/StatsCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TrendingUp, Users, Repeat, Download, Home, Calendar } from 'lucide-react';
+import { TrendingUp, Users, Repeat, Download, ArrowLeft, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
@@ -91,8 +91,9 @@ const Dashboard = () => {
               size="sm"
               onClick={() => navigate('/prompts')}
               className="flex items-center gap-2"
+              title="Back to Prompts"
             >
-              <Home className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4" />
             </Button>
           </div>
         </div>
