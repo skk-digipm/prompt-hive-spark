@@ -26,7 +26,7 @@ export default defineConfig(({ mode, command }) => {
       outDir: 'dist-extension',
       rollupOptions: {
         input: {
-          popup: path.resolve(__dirname, 'src/main.tsx'),
+          popup: path.resolve(__dirname, 'src/popup.tsx'),
           content: path.resolve(__dirname, 'src/content.ts'),
           background: path.resolve(__dirname, 'src/background.ts'),
         },
