@@ -1,8 +1,17 @@
 // Content script for text selection handling
+console.log('PromptHive content script loading...');
+
 let selectedText = '';
 let menuPosition = { x: 0, y: 0 };
 let showMenu = false;
 let menuElement: HTMLElement | null = null;
+
+// Check if we're in a valid environment
+if (typeof window === 'undefined' || typeof document === 'undefined') {
+  console.error('PromptHive: Not in a browser environment');
+} else {
+  console.log('PromptHive: Content script environment ready');
+}
 
 // Create and inject the floating button
 function createFloatingButton() {
@@ -50,11 +59,19 @@ function createFloatingButton() {
 
 // Handle text selection
 function handleTextSelection() {
+  console.log('PromptHive: Text selection event triggered');
+  
   const selection = window.getSelection();
-  if (!selection || selection.rangeCount === 0) return;
+  if (!selection || selection.rangeCount === 0) {
+    console.log('PromptHive: No selection or empty range');
+    return;
+  }
   
   const text = selection.toString().trim();
+  console.log('PromptHive: Selected text length:', text.length);
+  
   if (text.length < 10) {
+    console.log('PromptHive: Text too short, hiding menu');
     hideMenu();
     return;
   }
@@ -68,19 +85,25 @@ function handleTextSelection() {
     y: Math.max(rect.top + window.scrollY - 50, 10)
   };
   
+  console.log('PromptHive: Showing floating button at position:', menuPosition);
   showFloatingButton();
 }
 
 // Show floating button
 function showFloatingButton() {
+  console.log('PromptHive: Creating/showing floating button');
+  
   if (!menuElement) {
     menuElement = createFloatingButton();
+    console.log('PromptHive: Floating button created and added to DOM');
   }
   
   menuElement.style.left = `${menuPosition.x}px`;
   menuElement.style.top = `${menuPosition.y}px`;
   menuElement.style.display = 'flex';
   showMenu = true;
+  
+  console.log('PromptHive: Floating button displayed');
 }
 
 // Hide menu
@@ -200,16 +223,34 @@ function handleSelectionChange() {
   }
 }
 
-// Event listeners
-document.addEventListener('mouseup', handleTextSelection);
-document.addEventListener('selectionchange', handleSelectionChange);
-document.addEventListener('click', handleClickOutside);
+// Wait for DOM to be ready
+function initializeContentScript() {
+  console.log('PromptHive: Initializing content script');
+  
+  // Event listeners
+  document.addEventListener('mouseup', handleTextSelection);
+  document.addEventListener('selectionchange', handleSelectionChange);
+  document.addEventListener('click', handleClickOutside);
+  
+  console.log('PromptHive: Event listeners attached');
+  
+  // Handle messages from popup
+  if ((window as any).chrome?.runtime) {
+    console.log('PromptHive: Chrome runtime available, setting up message listener');
+    (window as any).chrome.runtime.onMessage.addListener((message: any, sender: any, sendResponse: any) => {
+      console.log('PromptHive: Received message:', message);
+      if (message.type === 'PROMPT_SAVED') {
+        showSuccessMessage();
+      }
+    });
+  } else {
+    console.warn('PromptHive: Chrome runtime not available');
+  }
+}
 
-// Handle messages from popup
-if ((window as any).chrome?.runtime) {
-  (window as any).chrome.runtime.onMessage.addListener((message: any, sender: any, sendResponse: any) => {
-    if (message.type === 'PROMPT_SAVED') {
-      showSuccessMessage();
-    }
-  });
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeContentScript);
+} else {
+  initializeContentScript();
 }

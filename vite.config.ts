@@ -33,11 +33,13 @@ export default defineConfig(({ mode, command }) => {
         output: {
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
-          assetFileNames: 'assets/[name].[ext]'
+          assetFileNames: 'assets/[name].[ext]',
+          format: 'iife'
         },
-        external: ['fs', 'path', 'crypto']
+        external: []
       },
-      target: 'es2020'
+      target: 'es2020',
+      minify: false
     } : undefined,
   };
 });
