@@ -34,8 +34,10 @@ export default defineConfig(({ mode, command }) => {
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
           assetFileNames: 'assets/[name].[ext]'
-        }
-      }
+        },
+        external: ['fs', 'path', 'crypto']
+      },
+      target: 'es2020'
     } : undefined,
   };
 });
