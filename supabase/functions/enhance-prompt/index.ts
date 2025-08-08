@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -16,8 +17,8 @@ serve(async (req) => {
 
   try {
     const { prompt } = await req.json();
-    
-    if (!prompt) {
+
+    if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
       throw new Error('Prompt is required');
     }
 
@@ -25,7 +26,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured');
     }
 
-    console.log('Enhancing prompt:', prompt);
+    console.log('[enhance-prompt] Incoming prompt length:', prompt.length);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,7 +35,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        // Using a fast, reliable model
+        model: 'gpt-4o-mini',
         messages: [
           { 
             role: 'system', 
@@ -52,27 +54,26 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
+      console.error('[enhance-prompt] OpenAI API error:', response.status, errorText);
       throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('OpenAI response:', data);
+    console.log('[enhance-prompt] OpenAI response keys:', Object.keys(data || {}));
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Unexpected OpenAI response structure:', data);
+    const enhancedPrompt = data?.choices?.[0]?.message?.content;
+    if (!enhancedPrompt || typeof enhancedPrompt !== 'string') {
+      console.error('[enhance-prompt] Unexpected OpenAI response structure:', JSON.stringify(data).slice(0, 1000));
       throw new Error('Invalid response from OpenAI API');
     }
-
-    const enhancedPrompt = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ enhancedPrompt }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in enhance-prompt function:', error);
+    console.error('[enhance-prompt] Error:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'An unexpected error occurred' 
+      error: (error as Error).message || 'An unexpected error occurred' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

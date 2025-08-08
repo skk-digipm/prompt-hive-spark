@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -7,6 +8,20 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+function tryParseJsonLoose(input: string) {
+  if (!input) return null;
+  // Remove code fences if present
+  let cleaned = input.trim();
+  if (cleaned.startsWith("```")) {
+    cleaned = cleaned.replace(/^```(json)?/i, "").replace(/```$/i, "").trim();
+  }
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -46,7 +61,16 @@ Return your response as valid JSON with this exact structure:
   "category": "string"
 }
 
-Focus on the main concepts, technologies, and purpose of the text. Make the title actionable and descriptive.`;
+Focus on the main concepts, technologies, and purpose of the text. Make the title actionable and descriptive. Ensure the output is ONLY JSON with no extra commentary.`;
+
+    const userPrompt = `Analyze this text and generate appropriate metadata:
+Source: ${sourceUrl || 'Unknown'}
+Domain: ${sourceDomain || 'Unknown'}
+
+Content:
+${content.substring(0, 3000)}`;
+
+    console.log('[analyze-prompt] Content length:', content.length);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -55,36 +79,38 @@ Focus on the main concepts, technologies, and purpose of the text. Make the titl
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { 
-            role: 'user', 
-            content: `Analyze this text and generate appropriate metadata:\n\nSource: ${sourceUrl || 'Unknown'}\nDomain: ${sourceDomain || 'Unknown'}\n\nContent:\n${content.substring(0, 3000)}` 
-          }
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.3,
-        max_tokens: 200,
+        max_tokens: 300,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('[analyze-prompt] OpenAI API error:', response.status, errorText);
+      throw new Error(`OpenAI API error: ${response.status} ${errorText}`);
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    const aiResponse = data?.choices?.[0]?.message?.content;
+    if (!aiResponse || typeof aiResponse !== 'string') {
+      console.error('[analyze-prompt] Unexpected OpenAI response structure:', JSON.stringify(data).slice(0, 1000));
+      throw new Error('Invalid AI response format');
+    }
 
-    let analysisResult;
-    try {
-      analysisResult = JSON.parse(aiResponse);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', aiResponse);
+    let analysisResult = tryParseJsonLoose(aiResponse);
+    if (!analysisResult) {
+      console.error('[analyze-prompt] Failed to parse AI response as JSON:', aiResponse);
       throw new Error('Invalid AI response format');
     }
 
     // Validate the response structure
     if (!analysisResult.title || !analysisResult.tags || !analysisResult.category) {
+      console.error('[analyze-prompt] Incomplete AI response object:', analysisResult);
       throw new Error('Incomplete AI response');
     }
 
@@ -101,11 +127,11 @@ Focus on the main concepts, technologies, and purpose of the text. Make the titl
     });
 
   } catch (error) {
-    console.error('Error in analyze-prompt function:', error);
+    console.error('[analyze-prompt] Error:', error);
     return new Response(
       JSON.stringify({ 
         error: 'Failed to analyze prompt',
-        details: error.message 
+        details: (error as Error).message 
       }),
       {
         status: 500,
