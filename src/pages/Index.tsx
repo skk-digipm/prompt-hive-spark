@@ -38,23 +38,31 @@ const Index = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const handleSavePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
-    if (editingPrompt) {
-      // Update existing prompt
-      await updatePrompt(editingPrompt.id, promptData);
-    } else {
-      // Create new prompt
-      await savePrompt(promptData);
-      
-      // Check if user is guest and this is their first prompt (guestPromptCount was 0 before saving)
-      if ((!user || isGuest) && guestPromptCount === 0) {
-        setTimeout(() => {
-          setShowGuestPrompt(true);
-        }, 1000);
+    try {
+      if (editingPrompt) {
+        // Update existing prompt
+        await updatePrompt(editingPrompt.id, promptData);
+      } else {
+        // Create new prompt
+        await savePrompt(promptData);
+
+        // Check if user is guest and this is their first prompt (guestPromptCount was 0 before saving)
+        if ((!user || isGuest) && guestPromptCount === 0) {
+          setTimeout(() => {
+            setShowGuestPrompt(true);
+          }, 1000);
+        }
+      }
+
+      setShowForm(false);
+      setEditingPrompt(null);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'GUEST_OPT_IN_REQUIRED') {
+        setShowLoginPopup(true);
+      } else {
+        console.error('Failed to save prompt:', error);
       }
     }
-    
-    setShowForm(false);
-    setEditingPrompt(null);
   };
 
   const handleEditPrompt = (prompt: Prompt) => {
@@ -194,7 +202,14 @@ const Index = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      onClick={() => setShowForm(true)}
+                      onClick={() => {
+                        const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+                        if (user || isGuest || optedIn) {
+                          setShowForm(true);
+                        } else {
+                          setShowLoginPopup(true);
+                        }
+                      }}
                       className="bg-gradient-primary hover:opacity-90"
                       size="sm"
                     >
@@ -267,7 +282,14 @@ const Index = () => {
                   </p>
                   <div className="flex gap-3 justify-center">
                     <Button
-                      onClick={() => setShowForm(true)}
+                      onClick={() => {
+                        const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+                        if (user || isGuest || optedIn) {
+                          setShowForm(true);
+                        } else {
+                          setShowLoginPopup(true);
+                        }
+                      }}
                       className="bg-gradient-primary hover:opacity-90"
                     >
                       <Plus className="w-4 h-4 mr-2" />
@@ -289,7 +311,14 @@ const Index = () => {
           </ContextMenuTrigger>
           
           <ContextMenuContent className="w-48 bg-background border border-border shadow-elevated z-50">
-            <ContextMenuItem onClick={() => setShowForm(true)} className="cursor-pointer">
+            <ContextMenuItem onClick={() => {
+              const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+              if (user || isGuest || optedIn) {
+                setShowForm(true);
+              } else {
+                setShowLoginPopup(true);
+              }
+            }} className="cursor-pointer">
               <Plus className="w-4 h-4 mr-2" />
               Add New Prompt
             </ContextMenuItem>

@@ -15,12 +15,15 @@ export const usePrompts = () => {
   const loadGuestPrompts = () => {
     if (!user && !isGuest) {
       const stored = localStorage.getItem('guest_prompts');
-      if (stored) {
+      const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+      if (stored && optedIn) {
         try {
           const parsed = JSON.parse(stored);
-          const guestSessionId = getGuestSessionId();
-          // Filter prompts for current guest session
-          const sessionPrompts = parsed.filter((p: any) => p.guestSessionId === guestSessionId);
+          const guestSessionId = localStorage.getItem('guest_session_id');
+          // Filter prompts for current guest session if available
+          const sessionPrompts = guestSessionId
+            ? parsed.filter((p: any) => p.guestSessionId === guestSessionId)
+            : parsed;
           setGuestPrompts(sessionPrompts.map((p: any) => ({
             ...p,
             createdAt: new Date(p.createdAt),
@@ -30,6 +33,8 @@ export const usePrompts = () => {
           console.error('Failed to load guest prompts:', error);
           setGuestPrompts([]);
         }
+      } else {
+        setGuestPrompts([]);
       }
     }
   };
@@ -45,7 +50,14 @@ export const usePrompts = () => {
       allGuestPrompts = [];
     }
 
-    const guestSessionId = getGuestSessionId();
+    const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+    if (!optedIn) return;
+
+    let guestSessionId = localStorage.getItem('guest_session_id');
+    if (!guestSessionId) {
+      guestSessionId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('guest_session_id', guestSessionId);
+    }
     // Remove existing prompts for this session
     allGuestPrompts = allGuestPrompts.filter((p: any) => p.guestSessionId !== guestSessionId);
     
@@ -65,30 +77,54 @@ export const usePrompts = () => {
   const migrateGuestPrompts = async () => {
     if (!user || isGuest || guestPrompts.length === 0) return;
 
+    // Idempotency guard using localStorage lock & done flag
+    const guestSessionId = localStorage.getItem('guest_session_id') || 'unknown';
+    const lockKey = `guest_migration_lock_${guestSessionId}_${user.id}`;
+    const doneKey = `guest_migration_done_${guestSessionId}_${user.id}`;
+
     try {
+      // If migration already done, exit
+      if (localStorage.getItem(doneKey) === 'true') return;
+
+      // Basic lock with 60s TTL
+      const existingLock = localStorage.getItem(lockKey);
+      if (existingLock) {
+        const lockTime = Number(existingLock);
+        if (!Number.isNaN(lockTime) && Date.now() - lockTime < 60000) {
+          return;
+        }
+      }
+      localStorage.setItem(lockKey, String(Date.now()));
+
       setLoading(true);
-      
-      for (const guestPrompt of guestPrompts) {
-        await supabase
-          .from('prompts')
-          .insert({
-            user_id: user.id,
-            title: guestPrompt.title,
-            content: guestPrompt.content,
-            tags: guestPrompt.tags,
-            category: guestPrompt.category,
-            tone: guestPrompt.tone,
-            source_url: guestPrompt.sourceUrl,
-            ai_model: guestPrompt.aiModel,
-            rating: guestPrompt.rating,
-            is_long_prompt: guestPrompt.content.length > 2000,
-            metadata: guestPrompt.metadata as any
-          });
+
+      // Prepare batch rows with migration metadata
+      const rows = guestPrompts.map((gp) => ({
+        user_id: user.id,
+        title: gp.title,
+        content: gp.content,
+        tags: gp.tags,
+        category: gp.category,
+        tone: gp.tone,
+        source_url: gp.sourceUrl,
+        ai_model: gp.aiModel,
+        rating: gp.rating,
+        is_long_prompt: gp.content.length > 2000,
+        metadata: {
+          ...(gp.metadata as any),
+          migratedAt: new Date().toISOString(),
+          migrationId: gp.id,
+          migratedFromSessionId: guestSessionId,
+        } as any,
+      }));
+
+      if (rows.length > 0) {
+        const { error } = await supabase.from('prompts').insert(rows);
+        if (error) throw error;
       }
 
       // Clear guest prompts after migration
       setGuestPrompts([]);
-      const guestSessionId = getGuestSessionId();
       const existing = localStorage.getItem('guest_prompts');
       if (existing) {
         try {
@@ -100,11 +136,15 @@ export const usePrompts = () => {
         }
       }
 
+      localStorage.setItem(doneKey, 'true');
+
       // Reload prompts from database
       await loadPrompts();
     } catch (error) {
       console.error('Failed to migrate guest prompts:', error);
     } finally {
+      // Release lock
+      localStorage.removeItem(lockKey);
       setLoading(false);
     }
   };
@@ -206,6 +246,14 @@ export const usePrompts = () => {
   });
 
   const savePrompt = async (promptData: Omit<Prompt, 'id' | 'createdAt' | 'updatedAt' | 'usageCount'>) => {
+    // Require explicit guest opt-in when not authenticated
+    if (!user && !isGuest) {
+      const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+      if (!optedIn) {
+        throw new Error('GUEST_OPT_IN_REQUIRED');
+      }
+    }
+
     // Handle guest prompts
     if (!user || isGuest) {
       const newPrompt: Prompt = {

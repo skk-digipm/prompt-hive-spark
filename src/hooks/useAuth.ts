@@ -50,6 +50,13 @@ export const useAuth = () => {
   };
 
   const signInAnonymously = async () => {
+    // Mark explicit guest opt-in and ensure a guest session id exists
+    localStorage.setItem('guest_opt_in', 'true');
+    let guestId = localStorage.getItem('guest_session_id');
+    if (!guestId) {
+      guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('guest_session_id', guestId);
+    }
     const { error } = await supabase.auth.signInAnonymously();
     return { error };
   };
@@ -58,6 +65,7 @@ export const useAuth = () => {
     // Clear guest session data before signing out
     localStorage.removeItem('guest_session_id');
     localStorage.removeItem('guest_prompts');
+    localStorage.removeItem('guest_opt_in');
     
     const { error } = await supabase.auth.signOut();
     return { error };
@@ -66,17 +74,17 @@ export const useAuth = () => {
   // Helper to check if user is anonymous/guest
   const isGuest = session?.user?.is_anonymous || false;
   
-  // Helper to get or create guest session ID
+  // Helper to get or create guest session ID (only when user explicitly opted in)
   const getGuestSessionId = () => {
-    if (!isGuest && !session) {
-      let guestId = localStorage.getItem('guest_session_id');
-      if (!guestId) {
-        guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('guest_session_id', guestId);
-      }
-      return guestId;
+    const optedIn = localStorage.getItem('guest_opt_in') === 'true';
+    if (!optedIn) return null;
+
+    let guestId = localStorage.getItem('guest_session_id');
+    if (!guestId) {
+      guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('guest_session_id', guestId);
     }
-    return null;
+    return guestId;
   };
 
   return {

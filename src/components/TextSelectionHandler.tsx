@@ -153,7 +153,9 @@ export const TextSelectionHandler = () => {
       console.error('Error saving prompt:', error);
       toast({
         title: "Error",
-        description: "Failed to save prompt. Please try again.",
+        description: error instanceof Error && error.message === 'GUEST_OPT_IN_REQUIRED'
+          ? "Please Login/Sign Up or Continue as Guest before saving."
+          : "Failed to save prompt. Please try again.",
         variant: "destructive"
       });
     } finally {

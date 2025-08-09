@@ -51,8 +51,10 @@ export const useExtensionPrompts = () => {
     } catch (error) {
       console.error('Failed to save pending prompt:', error);
       toast({
-        title: "Error",
-        description: "Failed to save prompt",
+        title: error instanceof Error && error.message === 'GUEST_OPT_IN_REQUIRED' ? 'Choose how to continue' : 'Error',
+        description: error instanceof Error && error.message === 'GUEST_OPT_IN_REQUIRED'
+          ? 'Please Login/Sign Up or Continue as Guest before saving.'
+          : 'Failed to save prompt',
         variant: "destructive",
       });
     }
